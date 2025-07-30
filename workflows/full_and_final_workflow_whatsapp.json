@@ -1,0 +1,1857 @@
+{
+  "name": "full and final workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -4720,
+        300
+      ],
+      "id": "06ab6b87-7393-4fe7-a590-68f9e7c6e7e0",
+      "name": "WhatsApp Trigger",
+      "webhookId": "[YOUR_WEBHOOK_ID]",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": " ",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are PredixionAI, a professional, empathetic debt-collection virtual assistant. Your mission is to help customers settle outstanding credit-card balances quickly and easily by pulling their up-to-date account details from a database and guiding them through simple repayment options. Do not include internal thoughts like <think> or reasoning in the final response.\nYou must always reply in the same language the user just used — for every individual message. You must follow these rules strictly:\n\nUser's detected language is: {{ $('code to detect lang').item.json.lang }}\n\nUser's message:  \n{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}\n\nReply ONLY in the same language and script as above, following the rules exactly.\n\nUse the language detection code results which categorize the message as one of these:\n\n- \"english\"\n- \"marathi\" (Devanagari script)\n- \"hindi\" (Devanagari script)\n- \"tamil\"\n- \"telugu\"\n- \"hinglish\" (Hindi written in Roman script)\n\nRules:\n\n1. If the detected language is \"english\", reply only in English.\n\n2. If \"marathi\", reply in Marathi using Devanagari script.\n\n3. If \"hindi\", reply in Hindi using Devanagari script.\n\n4. If \"tamil\", reply in Tamil script.\n\n5. If \"telugu\", reply **in Telugu script**.\n\n6. If \"hinglish\", reply in Hindi using Roman (Latin) script ONLY — \n   - DO NOT use Devanagari script for hinglish replies.\n   - Hinglish means Hindi words typed with English letters.\n   - Example: For \"mera paisa nahi hai\", reply: \"Main samajhta hoon. Aapke paas abhi paisa nahi hai...\"\n\n\n7. Always detect the language independently from the current message. Do NOT rely on prior messages or conversation context.\n\nGreet with Variety\nWhen the user says “Hello,” “Hi,” or similar, respond with one of:\n- “Hi! I’m PredixionAI—how can I help you today? You can also continue this chat on our website here: {{ $('If1').item.json.link }}”\n\n- “Hello there, I’m PredixionAI. What can I do for you? Feel free to switch to our web chat anytime: {{ $('If1').item.json.link }}”\n\n- “Hey! PredixionAI here. How may I assist? You can also chat with me on our website: {{ $('If1').item.json.link }}”\n\nIf the user asks for any information like their due amount, pending balance, minimum payment, due date, or risk level:\n   - First, check if both their Real ID and Name are already available.\n   - If yes, skip asking and directly show their details.\n   - If either is missing, ask only once:  \n     \"Could you please share your full name or Real ID so I can fetch your account details?\"\nWhen presenting account information, be clear and friendly. Here’s the template:\n\nThanks, {{ $('If greeted').item.json.name }}  (Real ID: {{ $('If greeted').item.json.realid }}).\n• Due amount: ₹{{ $('If greeted').item.json.due_amount }}\n• Minimum Due: ₹{{ $('If greeted').item.json.min_due }}\n• Due Date: {{ $('If greeted').item.json.due_date }}\n• Pending Days: {{ $('If greeted').item.json.pending_days }} days\n• Risk Level: {{ $('If greeted').item.json.risk }}\nLet me know if you’d like to see EMI options or other next steps.\n\nProactive “What-if” Guidance\nIf the user asks “What happens if I don’t pay?” respond with:\n“If you don’t pay, your card may be blocked, and legal or field-officer actions can follow. You can avoid all of this by paying just ₹$minDueHin today—would you like me to guide you through the payment now?”\n\nEmphasize Benefits of Paying Minimum\nWhenever you suggest paying the minimum, highlight benefits:\n\nPaying ₹$min_due today will:\n• Keep your account active\n• Prevent service interruptions\n• Protect your credit health\n• Avoid any legal escalation\nShall we proceed with that?\n\nFlexible Reminder Setup\nIf the user needs more time, offer to schedule a reminder:\n\nNo problem—when would you like me to remind you? I can send a WhatsApp message or arrange a call at your preferred time.\n\nClosing & Next Steps\nAfter payment:\n“Great! Your payment of ₹$amount is recorded. Is there anything else I can help you with today?”\nOther questions:\n“Happy to help—what else can I clarify for you?”\n\nHandling Disputes\nIf there’s a dispute flag:\n“I see you’ve raised a dispute: {{ $('If greeted').item.json.dispute }}. Would you like me to note this and escalate to our specialist team?”\n\nNever Fabricate\nAlways use only the data retrieved. If the sheet has no row, say:\n“I’m sorry—I couldn’t find your account with that information. Please check your phone or Real ID and try again.”\n\nEmpathetic Responses for Financial Hardship\nIf the user shares concerns like “माझं job गेलंय, पैसे नाहीत” or “I’ve lost my job,” or similar questions respond with warmth and support. Example:\n\n“I completely understand. It’s a tough time, and we're here to support you. We can look at options like paying just the minimum for now or scheduling a later date. What would be most helpful for you today?”\n- Avoid sounding robotic. Speak like a kind human assistant.\n- Offer help before giving facts.\nWHEN USER IS IN DISTRESS\nIf the user says they lost a job, had a medical emergency, or can't pay:\n- Respond empathetically:\n  - \"I’m really sorry to hear that, {{ $('If greeted').item.json.name }}. Please take care. I’ll note your situation—no pressure today.\"\n  - “I understand completely. Would it help if I check EMI options for later?”\n\nNever push for payment in this case.\n\nSource of Contact Queries\nIf the user asks “आपका नंबर किसने दिया?” or “How did you get my number?” type of questions respond clearly and politely:\n“We’re reaching out on behalf of your credit card provider to help you settle your pending balance easily. This is part of a routine service to assist customers with repayments.”\n\nClarify Chat Purpose for “Who is this?”\nIf the user asks “कौन?” or “Who is this?” or “तुम कौन हो?” or similar type of questions respond with:\n“I’m PredixionAI, an official virtual assistant helping you check and resolve your credit card dues. I can guide you through payment options, dispute help, or reminders—whatever you need.”\n\nInterest/Charges Clarification\nIf the user asks “इतना interest क्यों?” or “Why so much interest?”, break it down in plain terms:\n\n“The interest includes unpaid dues from past cycles, late payment fees, and possibly over-limit charges. If you'd like, I can share a detailed breakup or help you reduce future charges by clearing at least the minimum amount today.”"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        400,
+        650
+      ],
+      "id": "823f0d04-f479-4e4f-9432-fcccbfad31f5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        488,
+        870
+      ],
+      "id": "494f98ad-322f-4ded-814e-b8324b334976",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Edit Fields').item.json.phoneNumber }}",
+        "textBody": "={{ $('Edit Fields').item.json.textBody }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        600
+      ],
+      "id": "943d79ad-f396-4896-8821-fa240d816a82",
+      "name": "WhatsApp Business Cloud",
+      "webhookId": "[YOUR_WEBHOOK_ID]",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "3l4Ux7H2gvhUvsjC",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "99851a15-5b5d-4e99-9c34-f4047b002ae6",
+              "name": "phoneNumber",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "9858a109-aca9-4daa-98a9-1ef975b784c9",
+              "name": "textBody",
+              "value": "={{ \"Hi \" + $json.name_hindi + \". How can I help you today? You can also chat with me on our website here: \" + $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1108,
+        500
+      ],
+      "id": "104c4534-3b19-47a8-91bd-4eace8132c55",
+      "name": "Edit Fields",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('WhatsApp Trigger').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $node[\"Edit Fields\"].json[\"phoneNumber\"] }}",
+        "textBody": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1106,
+        800
+      ],
+      "id": "0a7f283b-27b7-479d-ae6a-1bbcd40f3021",
+      "name": "WhatsApp Business Cloud1",
+      "webhookId": "[YOUR_WEBHOOK_ID]",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "3l4Ux7H2gvhUvsjC",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1846,
+        600
+      ],
+      "id": "a9147fa7-bf9c-43a1-adfc-785569fa8809",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a0b68071-e33d-4ac8-8e8f-469d4ff5bbec",
+              "leftValue": "={{ $json.phone.replace(/^\\+/, '') }}",
+              "rightValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1548,
+        600
+      ],
+      "id": "70397625-5476-4e53-8156-502936f13b78",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "borrowers",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2144,
+        600
+      ],
+      "id": "1acfe4c8-13ce-45fc-9341-fa7a54a87d2c",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('If').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Filter",
+              "fieldValue": "Greeted"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -888,
+        500
+      ],
+      "id": "bc15a98c-d472-4111-b4c0-62d60845a410",
+      "name": "update to greeted",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "borrowers"
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        608,
+        870
+      ],
+      "id": "6a0c5457-9226-4446-8e42-e51c4be2d379",
+      "name": "Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ab234af7-d2f7-4f59-969f-528d74431c05",
+              "leftValue": "={{ $json.ptp_intent.toString() }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c8c875d7-01d3-4ff6-a3d6-d40dc4fdba00",
+              "leftValue": "={{ $json.refusal_to_pay.toString() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -228,
+        400
+      ],
+      "id": "a5e4a01d-41aa-4cbc-b7c5-48412853ac8e",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nlet rawText = $('WhatsApp Trigger').first().json.messages[0].text.body?.toLowerCase() || \"\";\nconst timestamp = parseInt($('WhatsApp Trigger').first().json.messages[0].timestamp) * 1000;\nconst today = new Date(timestamp);\n\n// --- Normalize Hinglish ---\nfunction normalizeHinglish(text) {\n  return text\n    .replace(/\\b(mai|mei|mein|me)\\b/gi, \"main\")\n    .replace(/\\b(ko|ke)\\b/gi, \"\")\n    .replace(/\\b(karo?ungi|karoongee|karoongi|karonga|karoonga|karunga)\\b/gi, \"karunga\")\n    .replace(/\\b(du?ngi|doongi|doongii|doongee|dunga|doonga)\\b/gi, \"dunga\")\n    .replace(/\\b(bharo?ungi|bharoongee|bharoongi|bharunga|bharoonga)\\b/gi, \"bharunga\")\n    .replace(/\\b(settle karungi|settle karoongi|settle karonga|settle karoonga)\\b/gi, \"settle karunga\")\n    .replace(/\\b(clear karungi|clear karoongi|clear karonga|clear karoonga)\\b/gi, \"clear karunga\")\n    .replace(/\\b(ho)\\b/gi, \"hoon\")\n    .replace(/\\b(paise|paisa|amount|due)\\b/gi, \"paisa\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n\nconst text = normalizeHinglish(rawText);\n\n// --- Keyword Lists ---\nconst ptpKeywords = [\n  // English\n  \"will pay\", \"i will pay\", \"i can pay\", \"i'll pay\",\n  \"i will clear\", \"will clear\", \"clear dues\", \"clear it\",\n  \"settle\", \"settle payment\", \"settle dues\",\n  \"repay\", \"repayment\", \"make payment\",\n  \"pay on\", \"pay tomorrow\", \"pay next week\",\n  \"payment by\", \"promise to pay\", \"promise\", \"ptp\",\n  \"pay the due\", \"pay the amount\", \"clear the due\",\n\n  // Normalized Hinglish\n  \"main dunga\", \"main paisa dunga\", \"main paisa bharunga\", \"main payment karunga\",\n  \"main clear karunga\", \"main settle karunga\", \"main promise karta hoon\",\n  \"kal paisa dunga\", \"paisa bhar dunga\", \"paisa de dunga\", \"amount clear karunga\", \"main kal payment karunga\", \"main kal paisa karunga\", \"main kal paisa bharunga\", \"main kal clear karunga\", \"main kal dunga\",\n\n  // Hindi (Devanagari)\n  \"मैं पैसे दूँगा\", \"मैं भुगतान करूँगा\", \"मैं चुका दूँगा\", \"मैं वादा करता हूँ\",\n  \"मैं भुगतान कर दूँगा\", \"मैं क्लियर कर दूँगा\", \"मैं वचन निभाऊँगा\",\n\n  // Marathi\n  \"मी पैसे देईन\", \"मी भरणा करीन\", \"मी उद्या पैसे देईन\", \"मी वचन देतो\",\n  \"मी पैसे भरेन\", \"मी रक्कम देईन\", \"मी पूर्ण करीन\", \"उद्या देईन\",\n  \"वचन देतो\", \"भरणा करीन\", \"क्लिअर करीन\",\n\n  // Telugu\n  \"నేను చెల్లిస్తాను\", \"నేను చెల్లించతాను\", \"రేపు చెల్లిస్తాను\",\n  \"నేను పూర్తిచేస్తాను\", \"పేమెంట్ ఇస్తాను\", \"వాగ్దానం చేస్తాను\",\n\n  // Tamil\n  \"நான் செலுத்துவேன்\", \"நான் பணம் தருவேன்\", \"நாளை பணம் தருவேன்\",\n  \"நான் கட்டணத்தை செலுத்துவேன்\", \"நான் தொகையை செலுத்துவேன்\",\n  \"நான் கடனை திருப்பிச் செலுத்துவேன்\", \"நான் உறுதியளிக்கிறேன்\", \"நான் மறுநாள் செலுத்துவேன்\", \"நான் பணம் செலுத்துவேன்\", \"நான் மறுநாள் பணம் செலுத்துவேன்\"\n];\n\n\nconst modeKeywords = {\n  upi: /\\b(upi|gpay|google\\s*pay|phonepe|paytm)\\b/i,\n  cash: /\\bcash\\b/i\n};\n\n\n// --- Helper Functions ---\nfunction extractAmount(text) {\n  const match = text.match(/(?:rs\\.?|₹)?\\s?(\\d{1,3}(?:,\\d{3})*|\\d{2,7})\\b/);\n  const minDue = $('If greeted').first().json.min_due;\n  if (match) {\n    return match[1].replace(/,/g, \"\"); // Remove commas like 1,000 → 1000\n  }\n  return minDue ? String(minDue) : \"\";\n}\n\n\nfunction extractMode(text) {\n  if (modeKeywords.upi.test(text)) return \"UPI\";\n  if (modeKeywords.cash.test(text)) return \"cash\";\n  return \"\";\n}\n\nfunction extractDate(text) {\n  // Map multilingual weekdays to indices (0 = Sunday)\n  const weekdayMap = {\n    sunday: 0, रविवार: 0, रविवारी: 0, रविवारला: 0, ఆదివారం: 0, ஞாயிறு: 0,\n    monday: 1, सोमवार: 1, सोमवारी: 1, సోమవారం: 1, திங்கள்: 1,\n    tuesday: 2, मंगलवार: 2, मंगळवारी: 2, మంగళవారం: 2, செவ்வாய்: 2,\n    wednesday: 3, बुधवार: 3, बुधवारला: 3, బుధవారం: 3, புதன்: 3,\n    thursday: 4, गुरुवार: 4, गुरुवारी: 4, గురువారం: 4, வியாழன்: 4,\n    friday: 5, शुक्रवार: 5, शुक्रवारला: 5, శుక్రవారం: 5, வெள்ளி: 5,\n    saturday: 6, शनिवार: 6, शनिवारी: 6, శనివారం: 6, சனி: 6\n  };\n\n  // Map multilingual month names to month index (0 = January)\n  const monthMap = {\n    jan: 0, january: 0, जनवरी: 0, जानेवारी: 0, జనవరి: 0, ஜனவரி: 0,\n    feb: 1, february: 1, फरवरी: 1, फेब्रुवारी: 1, ఫిబ్రవరి: 1, பிப்ரவரி: 1,\n    mar: 2, march: 2, मार्च: 2, मार्च: 2, మార్చి: 2, மார்ச்: 2,\n    apr: 3, april: 3, अप्रैल: 3, एप्रिल: 3, ఏప్రిల్: 3, ஏப்ரல்: 3,\n    may: 4, मई: 4, मे: 4, మే: 4, மே: 4,\n    jun: 5, june: 5, जून: 5, జూన్: 5, ஜூன்: 5,\n    jul: 6, july: 6, जुलाई: 6, जुलै: 6, జూలై: 6, ஜூலை: 6,\n    aug: 7, august: 7, अगस्त: 7, ऑगस्ट: 7, ఆగస్టు: 7, ஆகஸ்ட்: 7,\n    sep: 8, sept: 8, september: 8, सितंबर: 8, सप्टेंबर: 8, సెప్టెంబర్: 8, செப்டம்பர்: 8,\n    oct: 9, october: 9, अक्टूबर: 9, ऑक्टोबर: 9, అక్టోబర్: 9, அக்டோபர்: 9,\n    nov: 10, november: 10, नवंबर: 10, नोव्हेंबर: 10, నవంబర్: 10, நவம்பர்: 10,\n    dec: 11, december: 11, दिसंबर: 11, डिसेंबर: 11, డిసెంబర్: 11, டிசம்பர்: 11\n};\n\n\n  // Lowercase text for easier matching\n  const lowerText = text.toLowerCase();\n  const d = new Date(today);\n  const inDaysMatch = lowerText.match(/in\\s*(\\d{1,2})\\s*days/);\nif (inDaysMatch) {\n  const offset = parseInt(inDaysMatch[1]);\n  if (!isNaN(offset)) {\n    const date = new Date(today);\n    date.setDate(date.getDate() + offset);\n    return date.toISOString().slice(0, 10);\n  }\n}\n  // Multilingual relative day keywords and offsets\n  const relativeDays = [\n    { keywords: [\"day after tomorrow\", \"परसों\", \"परस\", \"parso\", \"parsu\", \"परवा\", \"ఎల్లుండి\", \"மறுநாள்\"], offset: 2 },\n    { keywords: [\"tomorrow\", \"कल\", \"कल\", \"kal\", \"udyaa\", \"udya\", \"उद्या\", \"రేపు\", \"நாளை\"], offset: 1 },\n    { keywords: [\"next week\", \"अगले हफ्ते\", \"पुढील आठवड्यात\", \"వచ్చే వారం\", \"அடுத்த வாரம்\"], offset: 7 }\n  ];\n\n  for (const rel of relativeDays) {\n    if (rel.keywords.some(k => lowerText.includes(k))) {\n      d.setDate(d.getDate() + rel.offset);\n      return d.toISOString().slice(0, 10);\n    }\n  }\n\n  // Check for weekday mentions in text\n  for (const [dayName, dayIndex] of Object.entries(weekdayMap)) {\n    if (lowerText.includes(`on ${dayName}`) || lowerText.includes(`by ${dayName}`) || lowerText.includes(`pay ${dayName}`) || lowerText.includes(dayName)) {\n      const currentDay = today.getDay();\n      let offset = (dayIndex - currentDay + 7) % 7;\n      if (offset === 0) offset = 7; // Next week if same day\n      const newDate = new Date(today);\n      newDate.setDate(newDate.getDate() + offset);\n      return newDate.toISOString().slice(0, 10);\n    }\n  }\n\n  // Explicit date regex - day + month (any language)\n  const monthNamesPattern = Object.keys(monthMap).join(\"|\");\n  const explicitDateRegex = new RegExp(\n  `(?:on|by)?\\\\s*(\\\\d{1,2})(?:st|nd|rd|th)?\\\\s*(${monthNamesPattern})\\\\s*(?:ko|ke)?`,\n  \"i\"\n);\n\n  const match = lowerText.match(explicitDateRegex);\n  if (match) {\n    const day = parseInt(match[1], 10);\n    const monthName = match[2].toLowerCase();\n    const month = monthMap[monthName];\n    if (month !== undefined) {\n      const date = new Date(today.getFullYear(), month, day);\n      if (!isNaN(date)) {\n        return date.toISOString().slice(0, 10);\n      }\n    }\n  }\n\n  // Optional numeric date formats like 05/06 or 05-06 (dd/mm)\n  const numericDateMatch = lowerText.match(/\\b(\\d{1,2})[\\/\\-](\\d{1,2})\\b/);\n  if (numericDateMatch) {\n    const day = parseInt(numericDateMatch[1], 10);\n    const month = parseInt(numericDateMatch[2], 10) - 1;\n    const date = new Date(today.getFullYear(), month, day);\n    if (!isNaN(date)) {\n      return date.toISOString().slice(0, 10);\n    }\n  }\n\n  return \"\";\n}\n\n\n// --- Final Flags ---\nconst tamilPtpRegex = /நான்\\s*(நாளை|மறுநாள்)?\\s*(பணம்\\s*)?(செலுத்து(வேன்|கிறேன்)|கட்டணத்தை\\s*செலுத்துவேன்)/i;\n\nconst teluguPtpRegex = /నేను\\s*(రేపు|ఎల్లుండి)?\\s*(చెల్లిస్తాను|చెల్లించతాను|చెల్లించెదను|తిరిగి\\s*చెల్లిస్తాను)/i;\n\nconst hindiPtpRegex = /मैं\\s*(?:(शुक्रवार|शनिवार|रविवार|सोमवार|मंगलवार|बुधवार|गुरुवार|कल|परसों)(?:\\s*को)?)?\\s*(?:नकद|यूपीआई)?\\s*(?:में)?\\s*(\\d+)?\\s*(?:रुपये|₹)?\\s*(?:का)?\\s*(भुगतान|चुकाना|देना|क्लियर|सेटल)\\s*कर(ूंगा|ूंगी|दूँगा|दूँगी)?/i;\n\nconst marathiPtpRegex = /मी\\s*(?:(शुक्रवार|शनिवार|रविवार|सोमवार|मंगळवार|बुधवार|गुरुवार|उद्या|परवा)(?:\\s*ला)?)?\\s*(?:रक्कम|पैसे)?\\s*(?:भर|दे|चुकव|सेटल|क्लिअर)\\s*(?:तो|ते|ईन|इन|ईल|णार)?/i;\n\nconst hasPromiseToPayIntent =\n  ptpKeywords.some(phrase => text.includes(phrase)) ||\n  tamilPtpRegex.test(text) ||\n  teluguPtpRegex.test(text) ||\n  hindiPtpRegex.test(text) ||\n  marathiPtpRegex.test(text);\n\n\n// --- Final Output ---\nreturn {\n  json: {\n    ptp_intent: hasPromiseToPayIntent,\n    ptp_captured: hasPromiseToPayIntent,\n    ptp_amount: extractAmount(text),\n    ptp_date: extractDate(text),\n    ptp_mode: extractMode(text),\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        400
+      ],
+      "id": "38cf4b1a-f1b6-429b-8cc2-5fee270d1601",
+      "name": "code to detect ptp intent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=You are PredixionAI, a professional, empathetic debt-collection virtual assistant. You’ve just captured the user’s Promise to Pay (PTP) intent and saved it in our system.\n\nUser's detected language is: {{ $('code to detect lang').item.json.lang }}\n\nUser's message:  \n{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}\n\nReply ONLY in the same language and script as above, following the rules exactly.\n\nUse the language detection code results which categorize the message as one of these:\n\n- \"english\"\n- \"marathi\" (Devanagari script)\n- \"hindi\" (Devanagari script)\n- \"tamil\"\n- \"telugu\"\n- \"hinglish\" (Hindi written in Roman script)\n\nRules:\n\n1. If the detected language is \"english\", reply only in English.\n\n2. If \"marathi\", reply in Marathi using Devanagari script.\n\n3. If \"hindi\", reply in Hindi using Devanagari script.\n\n4. If \"tamil\", reply in Tamil script.\n\n5. If \"telugu\", reply **in Telugu script**.\n\n6. If \"hinglish\", reply in Hindi using Roman (Latin) script ONLY — \n   - DO NOT use Devanagari script for hinglish replies.\n   - Hinglish means Hindi words typed with English letters.\n   - Example: For \"mera paisa nahi hai\", reply: \"Main samajhta hoon. Aapke paas abhi paisa nahi hai...\"\n\nNever Fabricate\nAlways use only the data retrieved. Use the variables as given ONLY.\n🟢 If the user intends to pay:\nReply:\n“Thanks for confirming! I’ve noted that you’ll pay ₹{{ $('code to detect ptp intent').item.json.ptp_amount }} on {{ $json.ptp_date }}. Would you like a payment reminder?”\n\nNEVER repeat data the user hasn't confirmed."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -8,
+        0
+      ],
+      "id": "2db2332b-546e-4ab3-849d-4cc2dfdec97e",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        140,
+        220
+      ],
+      "id": "02abe540-1395-4bc2-8a26-f876a5cf721c",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "701555166366105",
+        "recipientPhoneNumber": "={{ $node[\"Edit Fields\"].json[\"phoneNumber\"] }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        478,
+        100
+      ],
+      "id": "523e52f5-11ff-41ce-9087-29c56e344081",
+      "name": "WhatsApp Business Cloud2",
+      "webhookId": "[YOUR_WEBHOOK_ID]",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "3l4Ux7H2gvhUvsjC",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cef1f916-9a87-4182-87e1-0c68f0a9d6e5",
+              "name": "content",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        70,
+        650
+      ],
+      "id": "d76c9cac-2a89-4d3f-b55d-0d2ac4a82965",
+      "name": "Get Message Content"
+    },
+    {
+      "parameters": {
+        "jsCode": "const waData = $('WhatsApp Trigger').first().json;\nlet messageText = \"\";\n\nif (\n  waData &&\n  Array.isArray(waData.messages) &&\n  waData.messages[0] &&\n  waData.messages[0].text &&\n  typeof waData.messages[0].text.body === \"string\"\n) {\n  messageText = waData.messages[0].text.body.toLowerCase();\n}\n\nconst refusalKeywords = [\n  // English\n  \"court\", \"fraud\", \"legal\", \"police\", \"complaint\", \"threat\", \"lawsuit\",\n  \"illegal\", \"sue\", \"escalate\", \"harassment\", \"blacklist\", \"human rights\",\n  \"abuse\", \"privacy violation\", \"consumer forum\", \"file a case\", \"report\",\n  \"cybercrime\", \"fdcpa\", \"defamation\", \"dignity\", \"data leak\",\n\n  // Hindi (Devanagari)\n  \"कोर्ट\", \"धोखा\", \"फ्रॉड\", \"कानूनी\", \"पुलिस\", \"शिकायत\", \"धमकी\",\n  \"केस\", \"गैरकानूनी\", \"बदनाम\", \"चोरी\", \"हिरासत\", \"मानवाधिकार\",\n  \"अपमान\", \"गोपनीयता\", \"उपभोक्ता फोरम\", \"साइबर क्राइम\", \"डेटा लीक\",\n\n  // Hinglish\n  \"main complaint karunga\", \"main police mein jaunga\", \"main legal action lunga\",\n  \"fraud hai\", \"ye illegal hai\", \"main sue karunga\", \"main escalate karunga\",\n  \"threat mat do\", \"main police se contact karunga\", \"main case file karunga\",\n  \"main cyber cell mein report karunga\", \"data leak kar diya\", \"harassment hua hai\",\n  \"meri privacy violate hui\", \"main consumer forum jaunga\",\n\n  // Marathi\n  \"कोर्ट\", \"फसवणूक\", \"फ्रॉड\", \"कायदेशीर\", \"पोलीस\", \"तक्रार\", \"धमकी\",\n  \"गुन्हा\", \"गैरकायदेशीर\", \"दाखल करीन\", \"तक्रार करणार\", \"मानहानी\",\n  \"मानवाधिकार\", \"डेटा गळती\", \"गोपनीयता भंग\", \"हक्कांचे उल्लंघन\",\n\n  // Telugu\n  \"కోర్టు\", \"మోసం\", \"ఫ్రాడ్\", \"చట్టపరమైన\", \"పోలీస్\", \"ఫిర్యాదు\",\n  \"బద్నాము\", \"హెచ్చరిక\", \"న్యాయ చర్య\", \"అవమానించు\", \"ప్రైవసీ ఉల్లంఘన\",\n  \"సైబర్ క్రైం\", \"దరఖాస్తు\", \"హక్కులు\", \"బ్లాక్ లిస్ట్\", \"డేటా లీక్\",\n\n  // Tamil\n  \"நீதி\", \"முறைகேடு\", \"வஞ்சகம்\", \"போலீசில் புகார்\", \"குற்றச்சாட்டு\",\n  \"தவறானது\", \"முறையிடுவேன்\", \"தற்காலிக நடவடிக்கை\", \"குற்றம்\",\n  \"சட்டப்பூர்வமாக\", \"மிரட்டல்\", \"தமாஷா\", \"மிரட்டுகிறேன்\", \"இழிவுபடுத்துகிறீர்கள்\",\n  \"உணர்வுபூர்வமான தாக்கம்\", \"தகவல் கசியல்\", \"தரவரிசை பட்டியலில் சேர்த்தல்\", \"பிரைவசி மீறல்\"\n];\n\n\nconst escalate = refusalKeywords.some(keyword =>\n  messageText.includes(keyword.toLowerCase())\n);\n\n// Add 'escalate' field to the original input\nconst originalInput = $input.first().json;\noriginalInput.escalate = escalate;\n\nreturn [originalInput];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3102,
+        450
+      ],
+      "id": "0b78aa42-e1a5-44fe-8860-6c2705986e55",
+      "name": "Check Escalation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "15362d95-193e-40a4-a4c2-babdac8f07f5",
+              "leftValue": "={{ $('Check Escalation').item.json.escalate }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "5d944797-3dc4-45ea-ba5e-421bab720cf4",
+              "leftValue": "={{ $json.isStopMessage }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1563cec5-594f-45ae-a4ef-bf5af31ff12e",
+              "leftValue": "={{ $json.refusal_to_pay }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2584,
+        450
+      ],
+      "id": "21583ea1-16dc-4e3b-a17f-076416bbebf0",
+      "name": "If Escalate"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "escalation_required",
+              "fieldValue": "={{ $('If Escalate').item.json.escalate }}"
+            },
+            {
+              "fieldId": "journey_stage",
+              "fieldValue": "=escalated"
+            },
+            {
+              "fieldId": "dispute",
+              "fieldValue": "={{ $('WhatsApp Trigger').item.json.messages[0].text.body }}"
+            },
+            {
+              "fieldId": "DND_status",
+              "fieldValue": "={{ $('DND').item.json.isStopMessage }}"
+            },
+            {
+              "fieldId": "refusal_to_pay",
+              "fieldValue": "={{ $('Refusal to Pay detection').item.json.refusal_to_pay }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2144,
+        300
+      ],
+      "id": "d7703899-6595-44e3-ba23-d2463a4c1a09",
+      "name": "Update Escalation in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_WEBHOOK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"🚨Escalation Triggered!\\nPhone: +{{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}\\nMessage: {{ $('WhatsApp Trigger').item.json.messages[0].text.body }}\\nTime: {{ new Date(Number($('WhatsApp Trigger').item.json.messages[0].timestamp) * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2364,
+        300
+      ],
+      "id": "dc18fcd0-6d30-47d6-be09-3f2be24bfe6e",
+      "name": "Send Slack Alert"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are PredixionAI, a professional, calm, polite, empathetic debt-collection virtual assistant.\n\nBorrower message: {{ $('WhatsApp Trigger').item.json.messages[0].text.body }}  \nDetected language: {{ $('code to detect lang').item.json.lang }}\n\nYour task is to respond in {{ $('code to detect lang').item.json.lang }} only. Identify the borrower’s intent and choose the appropriate response type:\n\n---\n\n🔴 **If the borrower expresses serious concern or uses strong terms (e.g., “fraud”, “harassment”, “legal”, or shows emotional distress):**  \n- Thank them for reaching out  \n- Apologize sincerely  \n- Offer to escalate to a human support team  \n- Keep a calm, non-judgmental tone  \n\nExamples:  \n1. \"I'm really sorry to hear that, and I completely understand your concern. Please rest assured that we are here to support you. I will escalate this matter to our team so that someone can get in touch with you personally.\"  \n2. \"I apologize for any inconvenience caused. Please know that we are here to help, not to pressure. I’ll pass this on to our human support team, who will be in touch with you shortly.\"  \n\n---\n\n🚫 **If the borrower asks not to be contacted again (e.g., 'stop messaging', 'unsubscribe', 'don't disturb'):**  \n- Acknowledge the request  \n- Apologize  \n- Confirm no further messages will be sent  \n\nExamples:  \n1. \"Thank you for letting us know. We respect your preference and apologize for any inconvenience caused. We will ensure you are not contacted again.\"  \n2. \"I understand you do not wish to receive further messages. We’ll update our system accordingly and make sure your request is honored.\"  \n\n---\n\n💬 **If the borrower refuses to pay (e.g., 'I won’t pay', 'not giving any money'):**  \n- Stay calm and acknowledge the message  \n- Do *not* push for payment  \n- Gently ask if it’s due to hardship  \n- Offer possible solutions (EMI, deferment, reminders) in a supportive tone  \n\nExamples:  \n1. \"I understand. It’s okay if you can’t pay right now. Is it due to a job loss or financial emergency? I can look into options like EMIs or reminders.\"  \n2. \"Thanks for your message. We’re here to support you if you’re facing financial difficulties. Let me know if you’d like help exploring any alternatives.\"\n\n---\n\n🚫 **NEVER push for payment after a refusal.**  \n🔒 **NEVER repeat or confirm any personal or financial information unless the borrower has already done so.**  \n🗣️ **Respond only in {{ $('code to detect lang').item.json.lang }}.**\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1924,
+        200
+      ],
+      "id": "f48e221a-35fb-40d9-8723-85c1b495c4e8",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1776,
+        420
+      ],
+      "id": "b1528627-31a3-417a-a909-1b671eeed658",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "701555166366105",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -1548,
+        300
+      ],
+      "id": "bfa7a3bb-f37b-4987-9ace-b2cd6b7a9e8a",
+      "name": "WhatsApp Business Cloud3",
+      "webhookId": "[YOUR_WEBHOOK_ID]",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "3l4Ux7H2gvhUvsjC",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4cb0d8f3-e3b0-4160-aed1-303823bc4e37",
+              "leftValue": "={{ $('If greeted').item.json.journey_stage }}",
+              "rightValue": "new",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1404,
+        800
+      ],
+      "id": "7bba2330-020c-4867-a217-4478bd742d83",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "journey_stage",
+              "fieldValue": "=follow-up"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1624,
+        800
+      ],
+      "id": "68d57e7b-3d2b-4440-9ea9-15f3965a40e1",
+      "name": "Update follow-up in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('If greeted').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "refusal_to_pay",
+              "fieldValue": "={{ $json.refusal_to_pay }}"
+            },
+            {
+              "fieldId": "ptp_mode",
+              "fieldValue": "={{ $json.ptp_mode }}"
+            },
+            {
+              "fieldId": "ptp_captured",
+              "fieldValue": "={{ $json.ptp_intent }}"
+            },
+            {
+              "fieldId": "ptp_date",
+              "fieldValue": "={{ $json.ptp_date }}"
+            },
+            {
+              "fieldId": "ptp_amount",
+              "fieldValue": "={{ $json.ptp_amount }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        70,
+        400
+      ],
+      "id": "c416490d-a790-49f4-a5d5-05da817c715d",
+      "name": "Update PTP in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const waData = $('WhatsApp Trigger').first().json;\nlet messageText = \"\";\n\nif (\n  waData &&\n  Array.isArray(waData.messages) &&\n  waData.messages[0] &&\n  waData.messages[0].text &&\n  typeof waData.messages[0].text.body === \"string\"\n) {\n  messageText = waData.messages[0].text.body.toLowerCase()\n    .replace(/[.,\\/#!$%\\^&\\*;:{}=\\-_`~()]/g, \"\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Normalize Hinglish and Devanagari ---\nfunction normalizeStopText(text) {\n  return text\n    .replace(/\\b(mai|mei|mein|me)\\b/gi, \"main\")\n    .replace(/\\b(mujhe|mujhko)\\b/gi, \"\")\n    .replace(/\\b(karo|karna|karoge|karungi|karoongi|karunga|karonga)\\b/gi, \"karna\")\n    .replace(/\\b(mat)\\b/gi, \"stop\")\n    .replace(/\\b(bhejo|bhejna|message karna|text karna|call karna|likhna)\\b/gi, \"message\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\nconst normalizedText = normalizeStopText(messageText);\n\n// --- Phrase List (as before) ---\nconst stopPhrases = [\n  // English\n  \"stop\", \"stop messaging\", \"stop calling\", \"don't text\", \"dont text\",\n  \"don’t message again\", \"do not disturb\", \"dnd\", \"unsubscribe\", \"remove me\", \"block me\",\n  \"leave me alone\", \"no more messages\", \"i said stop\", \"not interested\", \"enough\", \"go away\",\n\n  // Hinglish\n  \"stop bhejo\", \"stop message karna\", \"stop call karna\", \"stop karo\", \"dobara message stop\",\n  \"dubara stop likhna\", \"block karna\", \"unsubscribe karna\", \"message stop bhejna\",\n\n  // Hindi (Devanagari)\n  \"मैसेज मत करो\", \"संदेश मत भेजो\", \"परेशान मत करो\", \"कॉल मत करो\", \"मैसेज बंद करो\",\n  \"मुझे हटाओ\", \"अनसब्सक्राइब\", \"डू नॉट डिस्टर्ब\", \"डीएनडी\", \"अब संपर्क न करें\",\n\n  // Marathi\n  \"संदेश पाठवू नका\", \"कॉल करू नका\", \"थांबा\", \"माझ्याशी संपर्क साधू नका\", \"unsubscribe करा\",\n  \"डू नॉट डिस्टर्ब\", \"डीएनडी\", \"मला त्रास देऊ नका\", \"ब्लॉक करा\",\n\n  // Telugu\n  \"మెసేజ్ పంపకండి\", \"పిలవకండి\", \"పరేశాన్ చేయకండి\", \"డిఎన్డి\", \"అన్సబ్స్క్రైబ్ చేయండి\",\n  \"నన్ను విడిచిపెట్టు\", \"ఇంకా సందేశాలు వద్దు\", \"నన్ను తొలగించు\", \"పిలవడం మానండి\",\n\n  // Tamil\n  \"செய்தி அனுப்ப வேண்டாம்\", \"என்னை தொந்தரவு செய்யாதே\", \"அனுப்பாதே\", \"பேசாதே\",\n  \"டிஎன்டி\", \"என்னை விலக்கு\", \"மீண்டும் தொடர்பு கொள்ள வேண்டாம்\",\n  \"சந்தேகத்தை ரத்து செய்\", \"மீண்டும் மெசேஜ் அனுப்பாதே\"\n];\n\n// --- Optional Regex (for multilingual variants or transliterations) ---\nconst stopRegexPatterns = [\n  /\\b(dnd|डू नॉट डिस्टर्ब|डीएनडी|डोन्ट टेक्स्ट|unsubscribe|remove me|block me)\\b/i,\n  /stop\\s+(messaging|calling|this|please|now)/i,\n  /mat\\s+(bhejo|message|call|karna|likhna)/i,\n  /परेशान\\s+मत\\s+करो/i,\n  /message\\s+stop\\b/i,\n  /\\bleave\\s+me\\s+alone\\b/i\n];\n\n// --- Final Check ---\nconst isStopMessage =\n  stopPhrases.some(phrase => normalizedText.includes(phrase)) ||\n  stopRegexPatterns.some(rx => rx.test(normalizedText));\n\nconst originalInput = $input.first().json;\noriginalInput.isStopMessage = isStopMessage;\n\nreturn [originalInput];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2804,
+        450
+      ],
+      "id": "0bce16b8-9983-4073-94d2-54d85e690baa",
+      "name": "DND"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "76003af6-7f13-4e67-b08b-eeea4dd02b55",
+              "leftValue": "={{ $json.DND_status.toString()}}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1328,
+        600
+      ],
+      "id": "0f1fe69c-5609-4b17-b81e-9c5746b3396c",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const waData = $('WhatsApp Trigger').first().json;\nlet messageText = \"\";\n\nif (\n  waData &&\n  Array.isArray(waData.messages) &&\n  waData.messages[0] &&\n  waData.messages[0].text &&\n  typeof waData.messages[0].text.body === \"string\"\n) {\n  messageText = waData.messages[0].text.body.toLowerCase();\n}\n\n// --- Account Closed / Loan Cleared Keywords ---\nconst accountStatusKeywords = [\n  // English\n  \"account is closed\", \"account closed\", \"loan cleared\", \"paid already\",\n  \"payment done\", \"done with payment\", \"account deactivated\", \"loan finished\",\n  \"loan over\", \"already paid\", \"amount paid\", \"settled\", \"already settled\",\n  \"dues cleared\", \"everything paid\", \"payment completed\", \"nothing pending\",\n\n  // Hindi\n  \"खाता बंद\", \"लोन चुकाया\", \"भुगतान हो गया\", \"खाता बंद है\", \"सब चुका दिया\",\n  \"मैंने दे दिया\", \"मैंने चुका दिया\", \"मैंने भुगतान कर दिया\", \"लोन खत्म\",\n  \"कर्ज चुका दिया\", \"कोई बकाया नहीं\", \"पूरा चुका दिया\", \"पूरा भुगतान किया\",\n  \"लोन क्लियर\", \"बिल चुकाया\", \"सेटल हो गया\",\n\n  // Hinglish\n  \"account band\", \"loan clear ho gaya\", \"paisa de diya\", \"payment ho gaya\",\n  \"sab bhar diya\", \"khatam ho gaya\", \"loan over\", \"already diya\", \"clear kar chuka\",\n  \"settled ho gaya\", \"koi pending nahi\", \"done paying\", \"all paid\", \"done with loan\",\n  \"payment completed\", \"already cleared\", \"account close ho gaya\", \"pura paisa diya\",\n\n  // Marathi\n  \"खाते बंद\", \"लोन पूर्ण\", \"भरणा केला\", \"आधीच भरले\", \"देय दिले\",\n  \"कर्ज फेडले\", \"संपले\", \"वसुली पूर्ण\", \"संपले आहे\", \"बिल भरले\",\n  \"बकाया नाही\", \"संपलेलं आहे\", \"क्लिअर केलं\", \"कर्ज क्लिअर\",\n\n  // Telugu\n  \"ఖాతా మూసివేసారు\", \"లోన్ పూర్తయింది\", \"చెల్లించాను\", \"పూర్తిగా చెల్లించాను\",\n  \"ఇప్పటికే చెల్లించాను\", \"పేమెంట్ అయింది\", \"బకాయిలేదు\", \"ఖాతా ముగిసింది\",\n  \"సెట్టిల్ చేశాను\", \"లొన్ ముగిసింది\", \"అంతా ఇచ్చాను\", \"ఇప్పటికే ఇచ్చాను\",\n\n  // Tamil\n  \"கணக்கு மூடப்பட்டது\", \"கணக்கு முடிந்தது\", \"கடன் முடிந்தது\", \"நான் செலுத்திவிட்டேன்\",\n  \"நான் ஏற்கனவே பணம் கொடுத்தேன்\", \"பணம் முடிந்துவிட்டது\", \"செட்டில் செய்துவிட்டேன்\",\n  \"பாக்கி இல்லை\", \"பணம் எல்லாம் கொடுத்துவிட்டேன்\", \"கணக்கு முடிந்துவிட்டது\",\n  \"கடன் முடிந்துவிட்டது\", \"பணம் செலுத்தப்பட்டது\", \"பணம் முடிந்தது\"\n];\n\nconst accountClosed = accountStatusKeywords.some(keyword =>\n  messageText.includes(keyword.toLowerCase())\n);\n\n// Add 'account_closed' field to the original input\nconst originalInput = $input.first().json;\noriginalInput.account_closed = accountClosed;\n\nreturn [originalInput];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4060,
+        300
+      ],
+      "id": "6ff92978-219d-470c-8701-e3cef2ed360e",
+      "name": "Check account escalation"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are PredixionAI, a calm, polite, and professional debt-collection virtual assistant. A borrower has replied that their account is already closed, settled, or fully paid.\n\nYour task is to reply politely in {{ $('code to detect lang').item.json.lang }} (the same language as the borrower).\n\nYour response should:\n\n- Acknowledge the update respectfully\n\n- Thank them for the information\n\n- Reassure them that their record will be updated\n\n- Invite them to reply in case of any discrepancy\n\n- Do not mention any pending amount or continue the collection process.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -3180,
+        50
+      ],
+      "id": "3e511bab-da34-4d62-a020-eaad5d50492d",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -3032,
+        270
+      ],
+      "id": "0901e449-d500-4937-91b3-05ec9a5432b3",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "701555166366105",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2804,
+        150
+      ],
+      "id": "0cf70600-2e3a-47b0-912c-328c4efbd143",
+      "name": "WhatsApp Business Cloud4",
+      "webhookId": "[YOUR_WEBHOOK_ID]",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "3l4Ux7H2gvhUvsjC",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nconst waData = $('WhatsApp Trigger').first().json;\nlet rawText = waData.messages?.[0]?.text?.body?.toLowerCase() || \"\";\n\n// --- Refusal Keywords ---\nconst refusalKeywords = [\n  // English\n  \"won't pay\", \"cant pay\", \"can't pay\", \"do not want to pay\",\n  \"refuse to pay\", \"not paying\", \"no payment\", \"stop payment\", \"will not pay\",\n\n  // Normalized Hinglish\n  \"main nahi dunga\", \"main paisa nahi dunga\", \"main clear nahi karunga\",\n  \"main payment nahi karunga\", \"main repay nahi karunga\", \"main nahi bharunga\",\n  \"main nahi de paunga\", \"main paisa nahi de sakta\", \"main pay nahi kar sakta\",\n  \"main baad mein dunga\", \"main abhi nahi de sakta\", \"main abhi nahi bhar sakta\",\n  \"thoda time do\", \"main ruk gaya hoon\", \"payment nahi hoga abhi\",\n\n  // Hindi\n  \"मैं पैसे नहीं दूँगा\", \"मैं भुगतान नहीं करूँगा\", \"मैं नहीं चुका सकता\",\n  \"मैं नहीं दे सकता\", \"मैं भुगतान नहीं कर पाऊँगा\", \"मैं नहीं दूँगा\",\n\n  // Marathi\n  \"मी पैसे देणार नाही\", \"मी भरणा करणार नाही\", \"मी देऊ शकत नाही\",\n  \"मी पैसे भरू शकत नाही\", \"भरणा करणार नाही\", \"मी नकार देतो\",\n\n  // Telugu\n  \"నేను చెల్లించలేను\", \"నేను ఇవ్వలేను\", \"నేను చెల్లించను\",\n  \"నేను చెల్లించబోతున్నాను కాదు\", \"నేను వద్దన్నాను\", \"నేను తిరస్కరిస్తున్నాను\",\n  \"నేను ఎల్లుండి చెల్లిస్తాను\", \"ఎల్లుండి చెల్లిస్తాను\", \"నేను ఎల్లుండి చెల్లించతాను\",\n\n  // Tamil\n  \"நான் பணம் தர மாட்டேன்\", \"நான் செலுத்த முடியாது\", \"நான் தர முடியாது\",\n  \"நான் கட்டணம் செலுத்த மாட்டேன்\", \"நான் மறுக்கிறேன்\", \"நான் பணம் தர மறுக்கிறேன்\"\n];\n\n// --- Detection Logic ---\nconst hasRefusalToPay = refusalKeywords.some(keyword =>\n  rawText.includes(keyword.toLowerCase())\n);\n\n// --- Final Output ---\nreturn {\n  json: {\n    refusal_to_pay: hasRefusalToPay\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3400,
+        450
+      ],
+      "id": "e368e89b-205a-41ea-bb65-49e7bcc48983",
+      "name": "Refusal to Pay detection"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e45e94a-8ae2-4d15-b0ef-6dd29d6baa0f",
+              "leftValue": "={{ $('If greeted').item.json.journey_stage }}",
+              "rightValue": "new",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        808,
+        100
+      ],
+      "id": "0fc31fe8-825a-464a-8c53-c6f2ac4456af",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "journey_stage",
+              "fieldValue": "=follow-up"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1106,
+        100
+      ],
+      "id": "7ca0450a-0b45-4975-bced-2420b315c1a5",
+      "name": "Update follow-up in Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "account_status",
+              "fieldValue": "closed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3400,
+        150
+      ],
+      "id": "f679ca45-121e-4d55-a62b-029e71354fc1",
+      "name": "update account status",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "account_status",
+              "fieldValue": "open"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3620,
+        450
+      ],
+      "id": "7b0b877c-dced-4d49-93c0-39170917fdec",
+      "name": "change acc status to open",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "058625cf-0eec-4288-ab9d-02439ca94a1c",
+              "leftValue": "={{ $json.account_closed.toString() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3840,
+        300
+      ],
+      "id": "e004210b-9dd2-4202-9b25-c91ca961948d",
+      "name": "check acc closing intent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $('WhatsApp Trigger').first().json.messages[0].text.body;\n\nfunction detectLang(text) {\n  if (!text || typeof text !== \"string\" || text.trim().length === 0) {\n    return \"unknown\";\n  }\n  const cleanText = text.trim();\n\n  const hasTamil = /[\\u0B80-\\u0BFF]/.test(cleanText);\n  const hasTelugu = /[\\u0C00-\\u0C7F]/.test(cleanText);\n  const hasDevanagari = /[\\u0900-\\u097F]/.test(cleanText);\n\n  const isRomanHindi = /\\b(mera|paisa|khata|due|hai|kya|nahi|tum|apna|aap)\\b/.test(cleanText) && !hasDevanagari;\n\n  // Marathi keywords (common Marathi words)\n  const marathiKeywords = [\n  \"आहे\", \"आहेत\", \"हो\", \"होय\", \"नाही\", \"नाहीत\",\n  \"मला\", \"माझं\", \"माझे\", \"माझा\", \"मी\", \"तू\", \"तो\", \"ती\", \"ते\", \"आपण\", \"तुम्ही\",\n  \"काय\", \"कोण\", \"कुठे\", \"कधी\", \"कसा\", \"कशी\", \"कसे\", \"का\", \"कायम\", \"कधीही\",\n  \"करा\", \"करतो\", \"करते\", \"करतात\", \"कर\", \"करू\", \"करायला\", \"केले\", \"केलं\",\n  \"पण\", \"आणि\", \"म्हणून\", \"म्हणजे\", \"आणि\", \"ही\", \"हा\", \"हे\",\n  \"इतका\", \"जास्त\", \"थोडं\", \"थोडंसा\", \"कमी\", \"अधिक\",\n  \"तुमचा\", \"तुमचे\", \"तुमचं\", \"आपला\", \"आपले\", \"आपलं\",\n  \"हेवा\", \"कसे\", \"कसेही\", \"कोणीतरी\",\n  \"सांग\", \"सांगितलं\", \"सांगू\", \"सांगायला\",\n  \"द्या\", \"दिले\", \"दिली\", \"दिलं\",\n  \"हवं\", \"हवी\", \"हवे\",\n  \"पाहिजे\", \"पाहिजे\", \"असल्यास\", \"असणे\",\n  \"नक्की\", \"होईल\", \"होऊ\", \"आणखी\",\n  \"तसे\", \"तसेच\", \"किंवा\", \"म्हणजेच\"\n];\n\n  const isMarathi = marathiKeywords.some(word => cleanText.includes(word));\n\n\n  // Hindi keywords (common Hindi words)\n  const hindiKeywords = [\n  \"है\", \"हैं\", \"था\", \"थी\", \"थे\", \"हो\", \"होना\", \"हूँ\", \"हूँगा\", \"हूँगी\",\n  \"मुझे\", \"मेरा\", \"मेरी\", \"मेरे\", \"मैं\", \"तुम\", \"तुम्हारा\", \"तुम्हारी\", \"तुम्हारे\",\n  \"क्या\", \"कौन\", \"कहाँ\", \"कब\", \"कैसे\", \"क्यों\", \"क्योंकि\", \"मत\",\n  \"करो\", \"करता\", \"करती\", \"करते\", \"किया\", \"किया था\", \"करना\", \"करूंगा\", \"करूंगी\",\n  \"हां\", \"हाँ\", \"नहीं\", \"ना\", \"पर\", \"और\", \"तो\", \"लेकिन\",\n  \"यह\", \"वह\", \"वे\", \"ये\", \"जो\", \"जिस\", \"जिसे\", \"जिसका\", \"जिसकी\", \"जिसके\",\n  \"बहुत\", \"थोड़ा\", \"थोड़ी\", \"थोड़े\", \"ज्यादा\", \"कम\", \"अधिक\",\n  \"आप\", \"हम\", \"हमारा\", \"हमारी\", \"हमारे\",\n  \"दिया\", \"दी\", \"दिए\", \"देना\", \"दे\", \"देता\", \"देती\", \"देते\",\n  \"चाहिए\", \"चाहिएं\", \"सकता\", \"सकती\", \"सकते\",\n  \"होना\", \"हुआ\", \"हुई\", \"हुए\",\n  \"कहना\", \"कहता\", \"कहती\", \"कहते\",\n  \"ना\", \"नहीं\",\n  \"क्या\", \"कैसा\", \"कैसी\", \"कैसे\",\n  \"तो\", \"भी\", \"तक\", \"से\", \"पर\",\n  \"जब\", \"अगर\", \"अगरچہ\", \"जबकि\", \"तब\",\n  \"और\", \"परन्तु\", \"बल्कि\"\n];\n\n  const isHindi = hindiKeywords.some(word => cleanText.includes(word));\n\n  if (hasTamil) return \"tamil\";\n  if (hasTelugu) return \"telugu\";\n\n  if (isRomanHindi) return \"hinglish\";\n\n  if (hasDevanagari) {\n    if (isMarathi) return \"marathi\";\n    if (isHindi) return \"hindi\";\n    // If neither keywords match, fallback to \"hindi\" by default\n    return \"hindi\";\n  }\n\n  if (/^[a-zA-Z0-9\\s.,!?']+$/.test(cleanText)) return \"english\";\n\n  return \"unknown\";\n}\n\nreturn {\n  lang: detectLang(text),\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4280,
+        300
+      ],
+      "id": "6ca0325c-1116-4bfe-a967-2ce5b301edd1",
+      "name": "code to detect lang"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_WEBHOOK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"✅ Account Marked as Closed\\nBorrower: {{ $('WhatsApp Trigger').item.json.contacts[0].profile.name }}\\nPhone: {{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}\\nMessage:{{ $('WhatsApp Trigger').item.json.messages[0].text.body }} \\nTime: {{ new Date(Number($('WhatsApp Trigger').item.json.messages[0].timestamp) * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}\\nPlease review if closure was not already logged.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3620,
+        150
+      ],
+      "id": "151c9ad6-538b-4bf7-ba44-ec51ccb85e25",
+      "name": "slack notif for account closing"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "escalation_required",
+              "fieldValue": "={{ $('If Escalate').item.json.escalate }}"
+            },
+            {
+              "fieldId": "refusal_to_pay",
+              "fieldValue": "={{ $('Refusal to Pay detection').item.json.refusal_to_pay }}"
+            },
+            {
+              "fieldId": "DND_status",
+              "fieldValue": "={{ $('DND').item.json.isStopMessage }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2364,
+        600
+      ],
+      "id": "3203d3bf-7486-496e-89e4-85ea7e951a6a",
+      "name": "Update Escalation status in Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_WEBHOOK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"⛔ Message blocked due to DND setting. \\nPhone: +{{ $('If').item.json.phone }} \\nName: {{ $('If').item.json.name }} \\nTime: {{ new Date(Number($('WhatsApp Trigger').item.json.messages[0].timestamp) * 1000).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1100,
+        700
+      ],
+      "id": "ff67edec-5d8d-4ca7-a541-e978dcab63f9",
+      "name": "Slack alert for message blocked"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0c8ee628-16f4-4374-b334-2d5493403384",
+              "leftValue": "={{ $('If').item.json.Filter }}",
+              "rightValue": "Greeted",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -668,
+        500
+      ],
+      "id": "63cbde3c-a90b-4c2e-962e-7fe9574409b7",
+      "name": "If greeted"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nconst rawText = $('WhatsApp Trigger').first().json.messages[0].text.body?.toLowerCase() || \"\";\n\n// --- Normalize Common Typos ---\nfunction normalizeTypos(text) {\n  return text\n    .replace(/\\bthanx\\b/gi, \"thanks\")\n    .replace(/\\bthnx\\b/gi, \"thanks\")\n    .replace(/\\bthnks\\b/gi, \"thanks\")\n    .replace(/\\bthanku\\b/gi, \"thank you\")\n    .replace(/\\bgn\\b/gi, \"good night\")\n    .replace(/\\bbye+e*\\b/gi, \"bye\")\n    .replace(/\\bokay\\b/gi, \"ok\")\n    .replace(/\\bok\\b/gi, \"ok\")\n    .replace(/\\bokk+\\b/gi, \"ok\")\n    .replace(/\\bsahi\\b/gi, \"ok\")\n    .replace(/\\btata\\b/gi, \"bye\")\n    .replace(/\\bchalo\\b/gi, \"bye\")\n    .replace(/\\bacha\\b/gi, \"ok\")\n    .replace(/\\bacha theek\\b/gi, \"ok\")\n    .replace(/\\balright\\b/gi, \"ok\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Normalize Hinglish / Code-Mixed ---\nfunction normalizeHinglish(text) {\n  return text\n    .replace(/\\b(shukriya|dhanyavad|dhanyvaad)\\b/gi, \"thank you\")\n    .replace(/\\b(chalta hoon|nikalta hoon|nikal raha hoon)\\b/gi, \"bye\")\n    .replace(/\\b(theek hai|thik hai|tik hai|sahi hai)\\b/gi, \"ok\")\n    .replace(/\\b(bye bye|bye-bye)\\b/gi, \"bye\")\n    .replace(/\\b(ho gaya|done ho gaya|bas itna)\\b/gi, \"done\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Levenshtein Distance Fuzzy Matcher ---\nfunction fuzzyIncludes(input, variants, maxDistance = 2) {\n  function levenshtein(a, b) {\n    const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);\n    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;\n    for (let i = 1; i <= b.length; i++) {\n      for (let j = 1; j <= a.length; j++) {\n        const cost = b[i - 1] === a[j - 1] ? 0 : 1;\n        matrix[i][j] = Math.min(\n          matrix[i - 1][j] + 1,     // deletion\n          matrix[i][j - 1] + 1,     // insertion\n          matrix[i - 1][j - 1] + cost // substitution\n        );\n      }\n    }\n    return matrix[b.length][a.length];\n  }\n\n  return variants.some(variant => levenshtein(input, variant) <= maxDistance);\n}\n\n// --- Process Text ---\nconst text = normalizeHinglish(normalizeTypos(rawText));\n\n// --- Keywords List (English + Hinglish + Multilingual) ---\nconst resetKeywords = [\n  \"thanks\", \"thank you\", \"bye\", \"done\", \"finished\", \"all good\", \"talk later\",\n  \"बाय\", \"धन्यवाद\", \"शुक्रिया\", \"ठीक है\", \"हो गया\", \"समाप्त\", \"धन्य\", \"चलेगा\", \"चले\", \n  \"गुड नाइट\", \"अलविदा\", \"नमस्ते\", \"थैंक यू\", \"चला जाता हूँ\", \"चली जाती हूँ\", \n  \"முடிந்தது\", \"நன்றி\", \"செல்கிறேன்\", // Tamil\n  \"ధన్యవాదాలు\", \"బై\", \"పోయాను\", \"చాలింది\", \"సరే\", // Telugu\n  \"धन्यवाद\", \"झाले\", \"ठिक आहे\", \"चालेल\", \"बाय\", \"गुड नाईट\" // Marathi\n];\n\n// --- Reset Detection ---\nconst shouldReset = resetKeywords.some(keyword => text.includes(keyword)) ||\n                    fuzzyIncludes(text, resetKeywords, 2);\n\n// --- Final Output ---\nreturn {\n  json: {\n    shouldReset\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4500,
+        300
+      ],
+      "id": "cc715603-4f47-408d-9bac-b1e69a2768e0",
+      "name": "Check Reset"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9b1028d3-c116-46cd-b483-c689e59b1bf1",
+              "leftValue": "={{ $('Check Reset').item.json.shouldReset.toString() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        808,
+        650
+      ],
+      "id": "1a93f699-d889-4d53-896f-ff1c920653a6",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "mode": "delete",
+        "deleteMode": "all"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        1028,
+        400
+      ],
+      "id": "88968e49-8f3c-4967-bdf9-332f6699da10",
+      "name": "Chat Memory Manager"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1116,
+        620
+      ],
+      "id": "ba25e881-67d9-4e7b-a7dd-711fb1e63716",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        270
+      ],
+      "id": "a5a0ee41-bba1-484b-b3cb-b4bb4ab28cbe",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1896,
+        420
+      ],
+      "id": "a50fd215-5985-4e51-85cb-415dbe593834",
+      "name": "Azure OpenAI Chat Model1",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        20,
+        220
+      ],
+      "id": "93bf1c32-e832-4f79-bced-0c12f7ad71dd",
+      "name": "Azure OpenAI Chat Model2",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        368,
+        870
+      ],
+      "id": "f29f76fd-b081-4de1-b289-62d492eb456c",
+      "name": "Azure OpenAI Chat Model3",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "update to greeted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update to greeted": {
+      "main": [
+        [
+          {
+            "node": "If greeted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update PTP in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Message Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code to detect ptp intent": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Message Content": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Escalation": {
+      "main": [
+        [
+          {
+            "node": "DND",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Escalate": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Escalation status in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Escalation in Supabase": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Alert": {
+      "main": [
+        [
+          {
+            "node": "Update Escalation in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Business Cloud2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Business Cloud1": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Update follow-up in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DND": {
+      "main": [
+        [
+          {
+            "node": "If Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack alert for message blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check account escalation": {
+      "main": [
+        [
+          {
+            "node": "check acc closing intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refusal to Pay detection": {
+      "main": [
+        [
+          {
+            "node": "Check Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Update follow-up in Supabase1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update account status": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "change acc status to open": {
+      "main": [
+        [
+          {
+            "node": "Refusal to Pay detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check acc closing intent": {
+      "main": [
+        [
+          {
+            "node": "slack notif for account closing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "change acc status to open",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code to detect lang": {
+      "main": [
+        [
+          {
+            "node": "Check account escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "slack notif for account closing": {
+      "main": [
+        [
+          {
+            "node": "update account status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Escalation status in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If greeted": {
+      "main": [
+        [
+          {
+            "node": "code to detect ptp intent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Business Cloud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Reset": {
+      "main": [
+        [
+          {
+            "node": "code to detect lang",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Business Cloud1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 0,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

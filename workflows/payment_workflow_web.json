@@ -1,0 +1,283 @@
+{
+  "name": "payment workflow web",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "[YOUR_WEBHOOK_ID]",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1980,
+        -20
+      ],
+      "id": "218ebc41-b946-474f-bfbe-84c545443a86",
+      "name": "Webhook",
+      "webhookId": "[YOUR_WEBHOOK_ID]"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.razorpay.com/v1/payments/{{ $json.body.payment_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1760,
+        -20
+      ],
+      "id": "ca111a36-3177-4246-ae67-ce76b9b45a35",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": " ",
+          "name": "razorpay"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dd596e78-71c9-4dc5-b885-dab13c4f36a6",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "captured",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1540,
+        -20
+      ],
+      "id": "9a585ed4-baac-4da6-a961-0ea54b5c46fb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').first().json.realid }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "razorsessionid",
+              "fieldValue": "={{ $('Webhook').first().json.sessionId }}"
+            },
+            {
+              "fieldId": "payment_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "paydate",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "amountpaid",
+              "fieldValue": "={{ $json.amount / 100 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        -120
+      ],
+      "id": "f76e43aa-e619-4868-85b6-6956400e0ae4",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"error\",\n  \"message\": \"Payment not captured. Please try again.\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1320,
+        100
+      ],
+      "id": "acc67a29-c252-4953-8818-2c5362e71a19",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Payment verified and saved\",\n  \"payment_id\": \"{{ $json.payment_id }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -840,
+        20
+      ],
+      "id": "b6c3be09-cb24-4170-82b9-4c8e7c3d8bfa",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"Payment received from {{ $('Webhook').first().json.realid }}\\nID: {{ $json.payment_id }}\\nAmount: ₹{{ $json.amountpaid / 100 }}\\nDate: {{ new Date().toLocaleString() }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -780,
+        -200
+      ],
+      "id": "feca4ad4-9180-4e95-97ad-beb741f91e3c",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "borrowers",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').first().json.realid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        -120
+      ],
+      "id": "0fe87530-3f78-44d3-a671-406b09958e33",
+      "name": "Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": " ",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Supabase1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

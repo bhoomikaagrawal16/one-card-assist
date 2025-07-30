@@ -1,0 +1,2266 @@
+{
+  "name": "full and final copy for web",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').item.json.body.chatInput }}\n",
+        "options": {
+          "systemMessage": "=You are PredixionAI, a professional, empathetic debt-collection virtual assistant. Your mission is to help customers settle outstanding credit-card balances quickly and easily by pulling their up-to-date account details from a database and guiding them through simple repayment options. Do not include internal thoughts like <think> or reasoning in the final response.\n\nYou must always reply in the same language the user just used — for every individual message. You must follow these rules strictly:\n\nUser's detected language is: {{ $('code to detect language').item.json.lang }}\n\nUser's message:\n{{ $('Webhook').item.json.body.chatInput }}\n\nReply ONLY in the same language and script as above, following the rules exactly.\n\n💬 Language rules\n(Apply strictly — no mixing languages or scripts.)\n\n1️⃣ If the detected language is \"english\", reply only in English.\n2️⃣ If \"marathi\", reply in Marathi using Devanagari script.\n3️⃣ If \"hindi\", reply in Hindi using Devanagari script.\n4️⃣ If \"tamil\", reply in Tamil script.\n5️⃣ If \"telugu\", reply in Telugu script.\n6️⃣ If \"hinglish\", reply in Hindi using Roman (Latin) script ONLY.\n\n📌 The account is currently {{ $('update to greeted').item.json.pending_days }} days overdue. Use this to guide tone and add follow-up text:\n\nIf pending days >30 & <60: “We understand sometimes circumstances cause delays, and we’re here to assist.”\n\nIf pending days ≥60 & <90: “Your account has been overdue for some time — we truly want to help find a solution.”\n\nIf pending days ≥90: “Since it’s been quite a while, even a small step today could really help keep your account in good standing.”\n\n👋 Greet with variety\nWhen the user says “Hello,” “Hi,” or similar, respond with one of:\n• “Hi! I’m PredixionAI—how can I help you today?”\n• “Hello there, I’m PredixionAI. What can I do for you?”\n• “Hey! PredixionAI here. How may I assist?”\n\n📌 Account Info Template to reply with (if Real ID or Name available)\n\nThanks, {{ $json.name }} (Real ID: {{ $json.realid }}).\n• Due amount: ₹{{ $json.due_amount }}\n• Minimum Due: ₹{{ $json.min_due }}\n• Due Date: {{ $json.due_date }}\n• Pending Days: {{ $json.pending_days }} days\n• Risk Level: {{ $json.risk }}\n\nLet me know if you'd like to see EMI options or other next steps.\n\n💬 Proactive “What-if” Guidance\nIf the user asks “What happens if I don’t pay?”:\n“If you don’t pay, your card may be blocked, and legal or field-officer actions can follow. You can avoid all of this by paying just ₹$minDueHin today—would you like me to guide you through the payment now?”\n\n🌟 Emphasize benefits of minimum payment\n\nPaying ₹$min_due today will:\n• Keep your account active\n• Prevent service interruptions\n• Protect your credit health\n• Avoid any legal escalation\n\nShall we proceed with that?\n\n🔔 Flexible Reminder Setup\nIf the user needs more time:\n“No problem—when would you like me to remind you? I can send a WhatsApp message or arrange a call at your preferred time.”\n\n📝 Handling Disputes\nIf there’s a dispute flag:\n“I see you’ve raised a dispute: {{ $('If1').item.json.dispute }}. Would you like me to note this and escalate to our specialist team?”\n\n🤝 Empathetic support for hardship\nIf user expresses job loss, medical emergency, or inability to pay:\n“I completely understand. It’s a tough time, and we're here to support you. We can look at options like paying just the minimum for now or scheduling a later date. What would be most helpful for you today?”\n\n❗ Important Rules\n• NEVER push for payment after a refusal.\n• NEVER fabricate or confirm personal data unless provided by the user.\n• ALWAYS detect language fresh from current input.\n• ALWAYS respond only in {{ $('code to detect language').item.json.lang }}.\nDo not show any process of your thinking. Only include the final message and important information that the user has asked for.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -1460,
+        780
+      ],
+      "id": "f7f8b181-4b7a-4aec-87ca-30a766ddd062",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.sessionId }}\n",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1372,
+        1000
+      ],
+      "id": "f46efda0-de66-401d-96f9-29cfe620e2fc",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "99851a15-5b5d-4e99-9c34-f4047b002ae6",
+              "name": "phoneNumber",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "9858a109-aca9-4daa-98a9-1ef975b784c9",
+              "name": "textBody",
+              "value": "={{ \"Hi \" + $json.name_hindi + \". How can I help you today?\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2968,
+        530
+      ],
+      "id": "a2b46ef2-9a2b-4c5d-a99c-ebd639068ef6",
+      "name": "Edit Fields",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3706,
+        680
+      ],
+      "id": "5b19dcab-6086-49ef-b63a-e5c41c7ca1da",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a0b68071-e33d-4ac8-8e8f-469d4ff5bbec",
+              "leftValue": "={{ $json.realid }}",
+              "rightValue": "={{ $('Webhook').item.json.body.realid }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3408,
+        680
+      ],
+      "id": "d29e0d98-6311-41e4-b279-274e99eacc54",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0c8ee628-16f4-4374-b334-2d5493403384",
+              "leftValue": "={{ $('If').item.json.Filter }}",
+              "rightValue": "Greeted",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        530
+      ],
+      "id": "785c7756-ef90-4ba0-983b-b0236a2646ca",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "borrowers"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4004,
+        680
+      ],
+      "id": "5779d0a8-d5c7-43bb-b12b-58196fbbb236",
+      "name": "Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('If').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Filter",
+              "fieldValue": "Greeted"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2748,
+        530
+      ],
+      "id": "3ccaafb7-6fca-4e7e-b09b-cc61370797fb",
+      "name": "update to greeted",
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "keyValue": "={{ $json.realid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        -1252,
+        1000
+      ],
+      "id": "8da4a52f-6ca1-4f4e-af86-d3529c3c6035",
+      "name": "Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ab234af7-d2f7-4f59-969f-528d74431c05",
+              "leftValue": "={{ $json.ptp_captured.toString() }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2088,
+        480
+      ],
+      "id": "7d06c5b6-c28c-4e95-90ee-91f4f3d61cca",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nlet rawText = ($('Webhook').first().json.body?.chatInput || \"\").toLowerCase();\nconst today = new Date();\n\n// --- Levenshtein Distance ---\nfunction levenshtein(a, b) {\n  const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);\n  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;\n  for (let i = 1; i <= b.length; i++) {\n    for (let j = 1; j <= a.length; j++) {\n      const cost = b[i - 1] === a[j - 1] ? 0 : 1;\n      matrix[i][j] = Math.min(\n        matrix[i - 1][j] + 1,\n        matrix[i][j - 1] + 1,\n        matrix[i - 1][j - 1] + cost\n      );\n    }\n  }\n  return matrix[b.length][a.length];\n}\n\nfunction fuzzyIncludes(input, variants, maxDistance = 2) {\n  return variants.some(variant => levenshtein(input, variant) <= maxDistance);\n}\n\n// --- Normalize Typos ---\nfunction normalizeTypos(text) {\n  return text\n    .replace(/\\bsun(day|dy|dei|d)?\\b/gi, \"sunday\")\n    .replace(/\\bmon(day|dy|dei)?\\b/gi, \"monday\")\n    .replace(/\\btue(s|sday|sdy)?\\b/gi, \"tuesday\")\n    .replace(/\\bwed(nesday|dy)?\\b/gi, \"wednesday\")\n    .replace(/\\bthu(rs|rsday|rsdy)?\\b/gi, \"thursday\")\n    .replace(/\\bfri(day|dy|dei)?\\b/gi, \"friday\")\n    .replace(/\\bsat(urday|day|dy)?\\b/gi, \"saturday\")\n    .replace(/\\bjan\\b/gi, \"january\")\n    .replace(/\\bfeb\\b/gi, \"february\")\n    .replace(/\\bmar\\b/gi, \"march\")\n    .replace(/\\bapr\\b/gi, \"april\")\n    .replace(/\\bjun\\b/gi, \"june\")\n    .replace(/\\bjul\\b/gi, \"july\")\n    .replace(/\\baug\\b/gi, \"august\")\n    .replace(/\\bsept?\\b/gi, \"september\")\n    .replace(/\\boct\\b/gi, \"october\")\n    .replace(/\\bnov\\b/gi, \"november\")\n    .replace(/\\bdec\\b/gi, \"december\")\n    .replace(/\\b(\\d+(\\.\\d+)?)k\\b/gi, (_, val) => String(Math.round(parseFloat(val) * 1000)))\n    .replace(/\\bpymnt\\b/gi, \"payment\")\n    .replace(/\\bpymt\\b/gi, \"payment\")\n    .replace(/\\bpym\\b/gi, \"payment\")\n    .replace(/\\bammount\\b/gi, \"amount\")\n    .replace(/\\bpy\\b/gi, \"pay\")\n    .replace(/\\bpaid\\b/gi, \"pay\")\n    .replace(/\\btransfr|trnsfer\\b/gi, \"transfer\")\n    .replace(/\\bdedunga\\b/gi, \"de dunga\")\n    .replace(/\\bgpay\\b/gi, \"upi\")\n    .replace(/\\bgoogle\\s*pay\\b/gi, \"upi\")\n    .replace(/\\bphonepe\\b/gi, \"upi\")\n    .replace(/\\bpaytm\\b/gi, \"upi\")\n    .replace(/\\bcashh?\\b/gi, \"cash\")\n    .replace(/\\btmrw\\b/gi, \"tomorrow\")\n    .replace(/\\btomm?or?w?\\b/gi, \"tomorrow\")\n    .replace(/\\btdy\\b/gi, \"today\")\n    .replace(/\\bnxt week\\b/gi, \"next week\")\n    .replace(/\\bend week\\b/gi, \"end of week\")\n    .replace(/\\bநாளைய\\b/g, \"நாளை\")\n    .replace(/\\bநாளைக்கு\\b/g, \"நாளை\")\n    .replace(/\\bமறுநாள\\b/g, \"மறுநாள்\")\n    .replace(/\\bசனிக்கிழம\\b/g, \"சனி\")\n    .replace(/\\bपरसो\\b/g, \"परसों\")\n    .replace(/\\bशनिवार\\b/g, \"शनिवार\")\n    .replace(/\\bसोमवार\\b/g, \"सोमवार\")\n    .replace(/\\bबुधवार\\b/g, \"बुधवार\")\n    .replace(/\\bगुरुवार\\b/g, \"गुरुवार\")\n    .replace(/\\bவெள்ளிக்கிழமை\\b/g, \"வெள்ளி\")\n    .replace(/\\bசனிக்கிழமை\\b/g, \"சனி\")\n    .replace(/\\bஜூன்\\b/g, \"ஜூன்\")    // already same, but added for clarity\n    .replace(/\\bஜூலை\\b/g, \"ஜூலை\")\n    .replace(/\\bशनिवारी\\b/g, \"शनिवार\")\n    .replace(/\\bशुक्रवारी\\b/g, \"शुक्रवार\")\n    .replace(/\\bरविवारी\\b/g, \"रविवार\")\n    .replace(/\\bसोमवारी\\b/g, \"सोमवार\")\n    .replace(/\\bबुधवारी\\b/g, \"बुधवार\")\n    .replace(/\\bगुरुवारी\\b/g, \"गुरुवार\")\n    .replace(/\\bमंगळवारी\\b/g, \"मंगळवार\")\n    .replace(/\\bपरवा\\b/g, \"परसों\")\n    .replace(/\\brs\\.\\s*/gi, \"₹\")\n    .replace(/\\bpayu\\b/gi, \"pay\")\n    .replace(/\\bu\\b/g, \"you\")\n    .replace(/\\brs\\b/gi, \"₹\")\n    .replace(/₹\\s+/g, \"₹\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Normalize Hinglish ---\nfunction normalizeHinglish(text) {\n  return text\n    .replace(/\\b(mai|mei|mein|me)\\b/gi, \"main\")\n    .replace(/\\b(ko|ke)\\b/gi, \"\")\n    .replace(/\\b(karo?ungi|karoongee|karoongi|karonga|karoonga|karunga)\\b/gi, \"karunga\")\n    .replace(/\\b(du?ngi|doongi|doongii|doongee|dunga|doonga)\\b/gi, \"dunga\")\n    .replace(/\\b(bharo?ungi|bharoongee|bharoongi|bharunga|bharoonga)\\b/gi, \"bharunga\")\n    .replace(/\\b(bharu?nga|bhardoonga|bhar dunga|bharenge|bharoon|bharne wala)\\b/gi, \"bharunga\")\n    .replace(/\\b(dedoonga|dedonga|de dunga|dunga|doonga|deunga)\\b/gi, \"dunga\")\n    .replace(/\\b(settle karungi|settle karoongi|settle karonga|settle karoonga)\\b/gi, \"settle karunga\")\n    .replace(/\\b(clear karungi|clear karoongi|clear karonga|clear karoonga)\\b/gi, \"clear karunga\")\n    .replace(/\\b(ho)\\b/gi, \"hoon\")\n    .replace(/\\b(paise|paisa|amount|due)\\b/gi, \"paisa\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\nconst text = normalizeHinglish(normalizeTypos(rawText));\n\n// --- Keyword Lists ---\nconst ptpKeywords = [\n  // English & Spelling Variants\n  \"will pay\", \"i will pay\", \"i can pay\", \"i'll pay\", \"will try to pay\", \"i will settle\", \"i’ll settle\",\n  \"i will clear\", \"i'll clear\", \"will clear\", \"clear dues\", \"clear it\", \"clear payment\", \"clear the due\",\n  \"settle\", \"settle payment\", \"settle dues\", \"settle it\", \"repay\", \"repayment\", \"make payment\",\n  \"i'll transfer\", \"will transfer\", \"i will transfer\", \"payment krdunga\", \"payment kr dunga\",\n  \"kal clear kr dunga\", \"clear krunga\", \"clear kar dunga\", \"settle krunga\", \"kr dunga\", \"krunga payment\",\n  \"de dunga\", \"dedunga\", \"pay krunga\", \"payment ho jayega\", \"paisa transfer karunga\", \"amount de dunga\",\n  \"paisa dedunga kal\", \"main payment clear kar dunga\", \"kal tak de dunga\", \"22nd tak de dunga\", \"by 25th\",\n  \"on 25th\", \"on monday\", \"monday tak\", \"payu\", \"gonna pay\", \"will make the payment\", \"i will make the payment\",\n  \"i'll make the payment\", \"make the payment\", \"will make payment\", \"i will make payment\", \"make payment on\",\n  \"will make payment on\", \"payment will be made\", \"payment will be done\", \"amount will be paid\", \"you’ll get the amount\",\n\n  // Normalized Hinglish\n  \"main dunga\", \"main paisa dunga\", \"main paisa bharunga\", \"main payment karunga\", \"main clear karunga\",\n  \"main settle karunga\", \"main promise karta hoon\", \"kal paisa dunga\", \"paisa bhar dunga\", \"paisa de dunga\",\n  \"amount clear karunga\", \"main kal payment karunga\", \"main kal paisa karunga\", \"main kal paisa bharunga\",\n  \"main kal clear karunga\", \"main kal dunga\", \"main 25 june ko payment karunga\", \"main friday ko paisa dunga\",\n  \"main friday ko ₹1500 de dunga\", \"main kal ₹1000 bharunga\", \"paisa dedunga monday tak\",\n  \"mai paisa dedoonga\", \"me kal ₹1000 clear krunga\", \"paisa bhar dunga sat\", \"main 22nd tak pay karunga\",\n\n  // Hindi (Devanagari)\n  \"मैं पैसे दूँगा\", \"मैं भुगतान करूँगा\", \"मैं चुका दूँगा\", \"मैं वादा करता हूँ\", \"मैं भुगतान कर दूँगा\",\n  \"मैं क्लियर कर दूँगा\", \"मैं वचन निभाऊँगा\", \"मैं 22 जून को पेमेंट करूँगा\", \"दो दिन में पैसे दे दूँगा\",\n  \"कल ₹1000 भुगतान करूँगा\", \"पैसे देंगे शनिवर\", \"पेमेंट dedunga monday तक\",\n\n  // Marathi\n  \"मी पैसे देईन\", \"मी भरणा करीन\", \"मी उद्या पैसे देईन\", \"मी वचन देतो\", \"मी पैसे भरेन\",\n  \"मी रक्कम देईन\", \"मी पूर्ण करीन\", \"उद्या देईन\", \"वचन देतो\", \"भरणा करीन\", \"क्लिअर करीन\",\n  \"मी kal payment karen\", \"मी पैसे दइन\", \"दोन दिवसांत पैसे देईन\", \"शनिवारी देइन पैसे\",\n\n  // Telugu\n  \"నేను చెల్లిస్తాను\", \"నేను చెల్లించతాను\", \"రేపు చెల్లిస్తాను\", \"నేను పూర్తిచేస్తాను\",\n  \"పేమెంట్ ఇస్తాను\", \"వాగ్దానం చేస్తాను\", \"రెండు రోజులలో చెల్లిస్తాను\",\n  \"ఈ వారం లోపు చెల్లిస్తాను\", \"శనివారం చెల్లించతాను ₹1500\", \"నేను జూలై 1న చెల్లిస్తాను\",\n\n  // Tamil\n  \"நான் செலுத்துவேன்\", \"நான் பணம் தருவேன்\", \"நாளை பணம் தருவேன்\", \"நான் கட்டணத்தை செலுத்துவேன்\",\n  \"நான் தொகையை செலுத்துவேன்\", \"நான் கடனை திருப்பிச் செலுத்துவேன்\", \"நான் உறுதியளிக்கிறேன்\",\n  \"நான் மறுநாள் செலுத்துவேன்\", \"நான் பணம் செலுத்துவேன்\", \"நான் ஜூலை 1 அன்று செலுத்துவேன்\",\n  \"₹2000 செலுத்துகிறேன்\", \"இரண்டு நாட்களில் பணம் தருவேன்\", \"சனிக்கிழமை ₹1500 செலுத்துவேன்\", \"அடுத்த வாரம் பணம் செலுத்துகிறேன்\", \"இந்த வாரத்தில் பணம் செலுத்துவேன்\", \"இந்த வாரம் செலுத்துவேன்\", \"அடுத்த வாரத்தில் செலுத்துகிறேன்\"\n];\n\n// Regex fallback\nconst ptpRegexes = [\n  /\\b(i'?ll|i will|will|gonna|planning to)\\s+(pay|make|settle|clear|repay|transfer)/i,\n  /₹\\s?\\d{2,6}(\\s|rs\\.?|rs)?\\s*(will be paid|by|on|through|via|se|tak|transfer)?/i,\n  /\\b(payment|amount|paisa)\\s+(will be|will be made|to be paid|kr dunga|dedunga|clear kar dunga)/i,\n  /\\b(in|within|after)\\s+\\d+\\s+(days|day|din)/i,\n  /\\b(promise to|i promise|main vada karta hoon|mee vachan deto|vada karta hoon).*pay/i,\n  /\\b(pay|settle|clear|repay|bhej|transfer).*(friday|saturday|sunday|monday|tuesday|wednesday|thursday|kal|parso|2 din mein|next week|week)/i,\n  /\\b(on|by|before)?\\s*\\d{1,2}(st|nd|rd|th)?\\s+(jan|feb|mar|apr|may|jun|july|aug|sep|sept|oct|nov|dec|june|july|august)/i,\n  /\\bmain\\s+.*(₹?\\d{3,6})?\\s*(paisa|payment|amount)?.*(de dunga|dedunga|bhar dunga|clear kar dunga|transfer kar dunga|pay kar dunga)/i\n];\n\n// Language regexes\nconst tamilPtpRegex = /நான்\\s*(?:வெள்ளி(?:க்கிழமை)?|சனி(?:க்கிழமை)?|ஞாயிறு|திங்கள்|செவ்வாய்|புதன்|வியாழன்)?\\s*(?:ஜனவரி|பிப்ரவரி|மார்ச்|ஏப்ரல்|மே|ஜூன்|ஜூலை|ஆகஸ்ட்|செப்டம்பர்|அக்டோபர்|நவம்பர்|டிசம்பர்)?\\s*\\d{0,2}?\\s*(?:நாளை|மறுநாள்)?\\s*(?:பணம்\\s*)?(?:செலுத்துவேன்|செலுத்துகிறேன்|செலுத்துவேன்|கட்டணத்தை\\s*செலுத்துவேன்)/i;\n\nconst teluguPtpRegex = /నేను\\s*(?:సోమవారం|మంగళవారం|బుధవారం|గురువారం|శుక్రవారం|శనివారం|ఆదివారం)?\\s*(?:జనవరి|ఫిబ్రవరి|మార్చి|ఏప్రిల్|మే|జూన్|జూలై|ఆగస్టు|సెప్టెంబర్|అక్టోబర్|నవంబర్|డిసెంబర్)?\\s*\\d{0,2}?\\s*(?:రేపు|ఎల్లుండి)?\\s*(?:తిరిగి\\s*)?(?:పணம்\\s*)?(?:చెల్లిస్తాను|చెల్లించతాను|చెల్లించెదను)/i;\n\n\nconst hindiPtpRegex = /मैं\\s*(?:(शुक्रवार|शनिवार|रविवार|सोमवार|मंगलवार|बुधवार|गुरुवार|कल|परसों)(?:\\s*को)?)?\\s*(?:नकद|यूपीआई)?\\s*(?:में)?\\s*(\\d+)?\\s*(?:रुपये|₹)?\\s*(?:का)?\\s*(भुगतान|चुकाना|देना|क्लियर|सेटल)\\s*कर(ूंगा|ूंगी|दूँगा|दूँगी)?/i;\n\nconst marathiPtpRegex = /(?:मी|पुढच्या आठवड्यात)?\\s*(?:(शुक्रवार|शनिवार|रविवार|सोमवार|मंगळवार|बुधवार|गुरुवार|उद्या|परवा)(?:\\s*ला)?)?\\s*(?:रक्कम|पैसे|पेमेंट)?\\s*(?:भर|दे|चुकव|सेटल|क्लिअर|कर)(?:तो|ते|ईन|इन|ईल|णार|करीन)?/i;\n\n\nconst hasPromiseToPayIntent =\n  ptpKeywords.some(phrase => text.includes(phrase)) ||\n  ptpKeywords.some(phrase => fuzzyIncludes(text, [phrase])) ||  // fuzzy match fallback\n  ptpRegexes.some(re => re.test(text)) ||\n  tamilPtpRegex.test(text) ||\n  teluguPtpRegex.test(text) ||\n  hindiPtpRegex.test(text) ||\n  marathiPtpRegex.test(text);\n\n// --- Mode Extraction ---\nconst modeKeywords = {\n  upi: /\\b(upi|gpay|google\\s*pay|phonepe|paytm)\\b/i,\n  cash: /\\bcash\\b/i\n};\n\nfunction extractMode(text) {\n  if (modeKeywords.upi.test(text)) return \"UPI\";\n  if (modeKeywords.cash.test(text)) return \"cash\";\n  return \"\";\n}\n\n// --- Amount Extraction ---\nfunction extractAmount(text) {\n  const minDue = $('If1').first().json.min_due;\n  const amountMatches = text.matchAll(/(?:rs\\.?|₹)\\s?(\\d{2,7})\\b/gi);\n  const fallbackMatch = text.match(/(?:பணம்|செலுத்து\\w*|கட்டணம்)\\s*(\\d{2,7})/i);\n  if (fallbackMatch) return fallbackMatch[1];\n  for (const match of amountMatches) {\n    const amt = match[1];\n    const val = parseInt(amt.replace(/,/g, \"\"));\n    if (val > 99) return String(val); // pick first valid amount > 99\n  }\n  return minDue ? String(minDue) : \"\";\n}\n\n// --- Date Extraction (unchanged) ---\nfunction getDaysToEndOfWeek(date) {\n  const day = date.getDay(); // 0 (Sun) to 6 (Sat)\n  const dayIndex = day === 0 ? 7 : day; // treat Sunday as 7\n  return 7 - dayIndex;\n}\n\n\nfunction extractDate(text) {\n  const weekdayMap = {\n    sunday: 0, रविवार: 0, रविवारी: 0, रविवारला: 0, ఆదివారం: 0, ஞாயிறு: 0,\n    monday: 1, सोमवार: 1, सोमवारी: 1, సోమవారం: 1, திங்கள்: 1,\n    tuesday: 2, मंगलवार: 2, मंगळवारी: 2, మంగళవారం: 2, செவ்வாய்: 2,\n    wednesday: 3, बुधवार: 3, बुधवारला: 3, బుధవారం: 3, புதன்: 3,\n    thursday: 4, गुरुवार: 4, गुरुवारी: 4, గురువారం: 4, வியாழன்: 4,\n    friday: 5, शुक्रवार: 5, शुक्रवारला: 5, శుక్రవారం: 5, வெள்ளி: 5, வெள்ளிக்கிழமை: 5,\n    saturday: 6, शनिवार: 6, शनिवारी: 6, శనివారం: 6, சனி: 6, சனிக்கிழமை: 6,\n  };\n\n  const monthMap = {\n    jan: 0, january: 0, जनवरी: 0, जानेवारी: 0, జనవరి: 0, ஜனவரி: 0,\n    feb: 1, february: 1, फरवरी: 1, फेब्रुवारी: 1, ఫిబ్రవరి: 1, பிப்ரவரி: 1,\n    mar: 2, march: 2, मार्च: 2, मार्च: 2, మార్చి: 2, மார்ச்: 2,\n    apr: 3, april: 3, अप्रैल: 3, एप्रिल: 3, ఏప్రిల్: 3, ஏப்ரல்: 3,\n    may: 4, मई: 4, मे: 4, మే: 4, மே: 4,\n    jun: 5, june: 5, जून: 5, \"జూన్\": 5, \"ஜூன்\": 5,\n    jul: 6, july: 6, जुलाई: 6, जुलै: 6, \"జూలై\": 6, \"ஜூலை\": 6,\n    aug: 7, august: 7, अगस्त: 7, ऑगस्ट: 7, ఆగస్టు: 7, ஆகஸ்ட்: 7,\n    sep: 8, sept: 8, september: 8, सितंबर: 8, सप्टेंबर: 8, సెప్టెంబర్: 8, செப்டம்பர்: 8,\n    oct: 9, october: 9, अक्टूबर: 9, ऑक्टोबर: 9, అక్టోబర్: 9, அக்டோபர்: 9,\n    nov: 10, november: 10, नवंबर: 10, नोव्हेंबर: 10, నవంబర్: 10, நவம்பர்: 10,\n    dec: 11, december: 11, दिसंबर: 11, डिसेंबर: 11, డిసెంబర్: 11, டிசம்பர்: 11\n  };\n  const wordToNumber = {\n    \"one\": 1, \"two\": 2, \"three\": 3, \"four\": 4, \"five\": 5,\n    \"six\": 6, \"seven\": 7, \"eight\": 8, \"nine\": 9, \"ten\": 10,\n    \"एक\": 1, \"दो\": 2, \"तीन\": 3, \"चार\": 4, \"पांच\": 5, \"छह\": 6, \"सात\": 7, \"आठ\": 8, \"नौ\": 9, \"दस\": 10,\n    \"दोन\": 2, \"तीन\": 3, \"चार\": 4, \"पाच\": 5, \"सहा\": 6, \"सात\": 7, \"आठ\": 8, \"नऊ\": 9, \"दहा\": 10,\n    \"ఒకటి\": 1, \"రెండు\": 2, \"మూడు\": 3, \"నాలుగు\": 4, \"ఐదు\": 5, \"ఆరు\": 6, \"ఏడు\": 7, \"ఎనిమిది\": 8, \"తొమ్మిది\": 9, \"పది\": 10,\n    \"ஒன்று\": 1, \"இரண்டு\": 2, \"மூன்று\": 3, \"நான்கு\": 4, \"ஐந்து\": 5, \"ஆறு\": 6, \"ஏழு\": 7, \"எட்டு\": 8, \"ஒன்பது\": 9, \"பத்து\": 10\n  };\n\n  const lowerText = text.toLowerCase();\n  const d = new Date(today);\n  const multiLangInDaysRegex = new RegExp(\n  \"(?:\\\\b|^)(?:in|within|after)?\\\\s*(\\\\d{1,2}|\" +\n  Object.keys(wordToNumber).join(\"|\") +\n  \")\\\\s*(?:din|days?|दिन(?:ों)?|दिवस(?:ों)?|दिवसात|రోజులు|రోజుల్లో|நாட்கள்|நாட்களில்|दिवसांनंतर)\\\\s*(में|बाद|के अंदर|अंदर|मध्ये|नंतर|లో|இல்|முடிவில்)?\\\\b\",\n  \"i\"\n);\n\n  // ✅ NEW: \"in/after/within X days\"\n  const multiMatch = lowerText.match(multiLangInDaysRegex);\n  if (multiMatch) {\n    const rawNum = multiMatch[1];\n    const daysToAdd = wordToNumber[rawNum] || parseInt(rawNum, 10);\n    if (!isNaN(daysToAdd)) {\n      const d = new Date(today);\n      d.setDate(d.getDate() + daysToAdd);\n      return d.toISOString().slice(0, 10);\n  }\n}\n\n\n  // ✅ Day-based references\n  const relativeDays = [\n  { keywords: [\"day after tomorrow\", \"परसों\", \"परस\", \"parso\", \"parsu\", \"परवा\", \"ఎల్లుండి\", \"மறுநாள்\", \"இரண்டு நாட்களில்\"], offset: 2 },\n  { keywords: [\"tomorrow\", \"कल\", \"kal\", \"udyaa\", \"udya\", \"उद्या\", \"రేపు\", \"நாளை\"], offset: 1 },\n  { keywords: [\"next week\", \"अगले हफ्ते\", \"पुढील आठवड्यात\", \"వచ్చే వారం\", \"அடுத்த வாரம்\", \"agle hafte\"], offset: 7 },\n  { keywords: [\"end of week\", \"by end of week\", \"इस हफ्ते के अंत तक\", \"या आठवड्याच्या शेवटी\", \"ఈ వారం చివరి\", \"இந்த வாரம் முடிவில்\"], offset: getDaysToEndOfWeek(today) },\n  { keywords: [\"this week\", \"इस हफ्ते\", \"या आठवड्यात\", \"ఈ వారం\", \"இந்த வாரம்\", \"இந்த வாரத்தில்\"], offset: getDaysToEndOfWeek(today) },\n  { keywords: [\"இரண்டு நாட்களில்\"], offset: 2 },\n  { keywords: [\"இந்த வாரத்தில்\"], offset: getDaysToEndOfWeek(today) },\n  { keywords: [ \"today\", \"now\", \"now itself\", \"right now\", \"as of now\", \"immediately\", \"instantly\", \"aaj\", \"aj\", \"आज\", \"abhi\", \"अभी\", \"aaj hi\", \"आज ही\", \"abhi ke abhi\", \"abhi turant\", \"abhi ke liye\", \"abhi abhi\", \"ab turant\", \"आज\", \"atta\", \"आत्ता\", \"आताच\", \"आत्ता लगेच\", \"आता\", \"लगेच\", \"இன்று\", \"இன்றே\", \"இப்போ\", \"இப்பொழுது\", \"இப்ப\", \"இப்போதே\", \"உடனே\", \"உடனடியாக\", \"ఈరోజు\", \"ఇప్పుడే\", \"ఇప్పుడు\", \"తక్షణమే\", \"వెంటనే\", \"ఇప్పుడిప్పుడే\"], offset: 0}\n];\n\n\n  for (const rel of relativeDays) {\n    if (rel.keywords.some(k => lowerText.includes(k))) {\n      d.setDate(d.getDate() + rel.offset);\n      return d.toISOString().slice(0, 10);\n    }\n  }\n\n  // ✅ Weekday keywords like \"Monday\", \"मंगलवार\"\n  for (const [dayName, dayIndex] of Object.entries(weekdayMap)) {\n    const words = lowerText.split(/\\s+/);\n    for (const word of words) {\n      if (fuzzyIncludes(word, [dayName])) {\n        const currentDay = today.getDay();\n        let offset = (dayIndex - currentDay + 7) % 7;\n        if (offset === 0) offset = 7;\n        const newDate = new Date(today);\n        newDate.setDate(today.getDate() + offset);\n        return newDate.toISOString().slice(0, 10);\n      }\n    }\n  }\n  function getNextWeekdayDate(weekday, today) {\n  const daysOfWeek = {\n    sunday: 0, monday: 1, tuesday: 2, wednesday: 3,\n    thursday: 4, friday: 5, saturday: 6,\n    \"ஞாயிறு\": 0, \"திங்கள்\": 1, \"செவ்வாய்\": 2, \"புதன்\": 3, \"வியாழன்\": 4, \"வெள்ளி\": 5, \"சனி\": 6,\n    \"ఆదివారం\": 0, \"సోమవారం\": 1, \"మంగళవారం\": 2, \"బుధవారం\": 3, \"గురువారం\": 4, \"శుక్రవారం\": 5, \"శనివారం\": 6,\n    \"रविवार\": 0, \"सोमवार\": 1, \"मंगलवार\": 2, \"बुधवार\": 3, \"गुरुवार\": 4, \"शुक्रवार\": 5, \"शनिवार\": 6,\n    \"रविवारी\": 0, \"सोमवारी\": 1, \"मंगळवारी\": 2, \"बुधवारी\": 3, \"गुरुवारी\": 4, \"शुक्रवारी\": 5, \"शनिवारी\": 6\n  };\n\n  const normalized = weekday.toLowerCase();\n  const targetDay = daysOfWeek[normalized];\n  if (targetDay === undefined) return null;\n\n  const todayDay = today.getDay();\n  let offset = (targetDay - todayDay + 7) % 7;\n  if (offset === 0) offset = 7;\n\n  const result = new Date(today);\n  result.setDate(today.getDate() + offset);\n  return result.toISOString().split(\"T\")[0];\n}\n\n  // ✅ Month Fuzzy Matcher\n  function getClosestMonth(word) {\n    const allMonths = Object.keys(monthMap);\n    let closest = \"\";\n    let minDistance = Infinity;\n\n    for (const month of allMonths) {\n      const dist = fuzzyIncludes(word, [month]) ? 1 : 99;\n      if (dist < minDistance && dist <= 2) {\n        minDistance = dist;\n        closest = month;\n      }\n    }\n\n    return closest || null;\n  }\n\n  // ✅ Explicit date: \"22 June\", \"5 July\"\n  const explicitDateRegex = /\\b(?:on|by)?\\s*(\\d{1,2})(?:st|nd|rd|th)?\\s+([a-zA-Z]+)/i;\n  const match = lowerText.match(explicitDateRegex);\n  if (match) {\n    const day = parseInt(match[1], 10);\n    const rawMonth = match[2].toLowerCase();\n    const correctedMonthKey = getClosestMonth(rawMonth);\n\n    if (correctedMonthKey && monthMap[correctedMonthKey] !== undefined) {\n      if (day >= 1 && day <= 31) {\n        const month = monthMap[correctedMonthKey];\n        const date = new Date(today.getFullYear(), month, day);\n        return date.toISOString().slice(0, 10);\n      }\n    }\n  }\n\n  // ✅ Standalone day (without month): \"on 25th\"\n  const dayOnlyMatch = lowerText.match(/\\b(?:on|by|before)?\\s*(\\d{1,2})(st|nd|rd|th)?\\b/);\n  if (dayOnlyMatch) {\n    const day = parseInt(dayOnlyMatch[1], 10);\n    const todayDay = today.getDate();\n    let month = today.getMonth();\n    let year = today.getFullYear();\n\n    if (day < todayDay) {\n      month += 1;\n      if (month > 11) {\n        month = 0;\n        year += 1;\n      }\n    }\n\n    const inferredDate = new Date(year, month, day);\n    if (!isNaN(inferredDate)) {\n      return inferredDate.toISOString().slice(0, 10);\n    }\n  }\n  \n  // ✅ Numeric format: 22/06 or 22-06\n  const numericDateMatch = lowerText.match(/\\b(\\d{1,2})[\\/\\-](\\d{1,2})\\b/);\n  if (numericDateMatch) {\n    const day = parseInt(numericDateMatch[1], 10);\n    const month = parseInt(numericDateMatch[2], 10) - 1;\n    const date = new Date(today.getFullYear(), month, day);\n    return date.toISOString().slice(0, 10);\n  }\n\n  return null;\n}\n\n\n// --- Final Output ---\nreturn {\n  json: {\n    realid: $input.first().json.realid,\n    name: $input.first().json.name,\n    ptp_intent: hasPromiseToPayIntent,\n    ptp_captured: hasPromiseToPayIntent,\n    ptp_amount: extractAmount(text),\n    ptp_date: extractDate(text),\n    ptp_mode: extractMode(text),\n    // optionally pass through other fields too if you want\n    risk: $input.first().json.risk,\n    emi_available: $input.first().json.emi_available,\n    refusal_to_pay: $input.first().json.refusal_to_pay,\n    dispute: $input.first().json.dispute,\n    customer_sentiment: $input.first().json.customer_sentiment,\n    escalation_required: $input.first().json.escalation_required,\n    transcript: $input.first().json.transcript,\n    call_summary: $input.first().json.call_summary,\n    agent_malfunctioning: $input.first().json.agent_malfunctioning,\n    chat_complete: $input.first().json.chat_complete,\n    link: $input.first().json.link,\n    created_at: $input.first().json.created_at,\n    updated_at: $input.first().json.updated_at,\n    Filter: $input.first().json.Filter,\n    journey_stage: $input.first().json.journey_stage,\n    account_status: $input.first().json.account_status,\n    DND_status: $input.first().json.DND_status,\n    latency_logs: $input.first().json.latency_logs\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2308,
+        480
+      ],
+      "id": "5270c603-7fbb-4fa5-9137-21840af54ff3",
+      "name": "code to detect ptp intent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').first().json.body.chatInput }}\n",
+        "options": {
+          "systemMessage": "=You are PredixionAI, a professional, empathetic debt-collection virtual assistant. You’ve just captured the user’s Promise to Pay (PTP) intent and saved it in our system.\n\nUser's detected language is: {{ $('code to detect language').item.json.lang }}\n\nUser's message:  \n{{ $('Webhook').item.json.body.chatInput }}\n\nReply ONLY in the same language and script as above, following the rules exactly.\n\nUse the language detection code results which categorize the message as one of these:\n\n- \"english\"\n- \"marathi\" (Devanagari script)\n- \"hindi\" (Devanagari script)\n- \"tamil\"\n- \"telugu\"\n- \"hinglish\" (Hindi written in Roman script)\n\nRules:\n\n1. If the detected language is \"english\", reply only in English.\n\n2. If \"marathi\", reply in Marathi using Devanagari script.\n\n3. If \"hindi\", reply in Hindi using Devanagari script.\n\n4. If \"tamil\", reply in Tamil script.\n\n5. If \"telugu\", reply **in Telugu script**.\n\n6. If \"hinglish\", reply in Hindi using Roman (Latin) script ONLY — \n   - DO NOT use Devanagari script for hinglish replies.\n   - Hinglish means Hindi words typed with English letters.\n   - Example: For \"mera paisa nahi hai\", reply: \"Main samajhta hoon. Aapke paas abhi paisa nahi hai...\"\n\nNever Fabricate\nAlways use only the data retrieved. Use the variables as given ONLY.\n🟢 If the user intends to pay:\nReply:\n“Thanks for confirming! I’ve noted that you’ll pay ₹{{ $('code to detect ptp intent').item.json.ptp_amount }} on {{ $json.ptp_date }}. Would you like a payment reminder?”\n\nNEVER repeat data the user hasn't confirmed."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1868,
+        -20
+      ],
+      "id": "454348d3-725f-4c83-9a37-ecc9c7fffd2f",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').first().json.body.sessionId }}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1720,
+        200
+      ],
+      "id": "3878fb54-43e0-497e-a021-b18f9a1684de",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nconst rawText = ($('Webhook').first().json.body?.chatInput || \"\").toLowerCase();\n\n\n// --- Normalize Typos ---\nfunction normalizeTypos(text) {\n  return text\n    .replace(/\\b(har+ass?m[e3]nt|harrassment|harrasment|harasment)\\b/gi, \"harassment\")\n    .replace(/\\bfra[uúü]d\\b/gi, \"fraud\")\n    .replace(/\\bc[o0]urt\\b/gi, \"court\")\n    .replace(/\\bpol+ice\\b/gi, \"police\")\n    .replace(/\\bthrea[t7]\\b/gi, \"threat\")\n    .replace(/\\bescalat[e3]\\b/gi, \"escalate\")\n    .replace(/\\bsuicid[e3]?\\b/gi, \"suicide\")\n    .replace(/\\bcomplain[t]?\\b/gi, \"complaint\")\n    .replace(/\\btrouble\\b/gi, \"trouble\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Normalize Hinglish ---\nfunction normalizeHinglish(text) {\n  return text\n    .replace(/\\b(mai|mei|mein|me)\\b/gi, \"main\")\n    .replace(/\\b(ko|ke)\\b/gi, \"\")\n    .replace(/\\b(karo?ungi|karoongee|karoongi|karonga|karoonga|karunga)\\b/gi, \"karunga\")\n    .replace(/\\b(du?ngi|doongi|doongii|doongee|dunga|doonga)\\b/gi, \"dunga\")\n    .replace(/\\b(marr? jaunga|mar jaonga)\\b/gi, \"mar jaunga\")\n    .replace(/\\b(khudkushi|khud ko mar lunga|suicide karunga)\\b/gi, \"suicide\")\n    .replace(/\\b(pareshaan|pareshan)\\b/gi, \"pareshan\")\n    .replace(/\\b(sc?ammer|jhoothe)\\b/gi, \"fraud\")\n    .replace(/\\b(court\\s?jaunga)\\b/gi, \"court jaunga\")\n    .replace(/\\b(police\\s?(complain|contact)?\\s?karunga)\\b/gi, \"police complain karunga\")\n    .replace(/\\b(main complaint karunga|mein complaint krunga)\\b/gi, \"main complaint karunga\")\n    .replace(/\\b(main legal action lunga)\\b/gi, \"main legal action lunga\")\n    .replace(/\\b(main escalate karunga)\\b/gi, \"main escalate karunga\")\n    .replace(/\\b(main case file karunga)\\b/gi, \"main case file karunga\")\n    .replace(/\\b(main cyber cell mein report karunga)\\b/gi, \"main cyber cell mein report karunga\")\n    .replace(/\\b(main consumer forum jaunga)\\b/gi, \"main consumer forum jaunga\")\n    .replace(/\\b(main maar dunga|main tumhari hatya kar dunga)\\b/gi, \"main maar dunga\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\nconst text = normalizeHinglish(normalizeTypos(rawText));\n\n// --- Fuzzy Matching ---\nfunction fuzzyIncludes(input, variants, maxDistance = 2) {\n  function levenshtein(a, b) {\n    const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);\n    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;\n    for (let i = 1; i <= b.length; i++) {\n      for (let j = 1; j <= a.length; j++) {\n        const cost = b[i - 1] === a[j - 1] ? 0 : 1;\n        matrix[i][j] = Math.min(\n          matrix[i - 1][j] + 1,\n          matrix[i][j - 1] + 1,\n          matrix[i - 1][j - 1] + cost\n        );\n      }\n    }\n    return matrix[b.length][a.length];\n  }\n  return variants.some(variant => levenshtein(input, variant) <= maxDistance);\n}\n\n// --- Escalation Keywords ---\nconst escalationKeywords = [\n  // English\n  \"suicide\", \"harassment\", \"fraud\", \"court\", \"police\", \"threat\", \"escalate\", \"complaint\",\n  \"mental stress\", \"depression\", \"privacy\", \"cyber cell\", \"consumer forum\", \"scammer\", \"scam\",\n  \"court\", \"fraud\", \"legal\", \"police\", \"threat\", \"lawsuit\", \"crime\", \"criminal\",\n  \"illegal\", \"sue\", \"escalate\", \"harassment\", \"blacklist\", \"human rights\",\n  \"abuse\", \"privacy violation\", \"consumer forum\", \"file a case\", \"report\", \"trouble\", \"kill\",\n  \"cybercrime\", \"fdcpa\", \"defamation\", \"dignity\", \"data leak\", \"tweet\", \"complain\",\n  // Hinglish normalized\n  \"main suicide karunga\", \"main pareshan ho gaya hu\", \"tum log fraud ho\", \"court jaunga\", \"police complain karunga\",\n  \"main complaint karunga\", \"main legal action lunga\", \"main escalate karunga\",\n  \"main case file karunga\", \"main cyber cell mein report karunga\",\n  \"main consumer forum jaunga\", \"main maar dunga\",\n  \"main complaint karunga\", \"main police mein jaunga\", \"main legal action lunga\",\n  \"fraud hai\", \"ye illegal hai\", \"main sue karunga\", \"main escalate karunga\",\n  \"threat mat do\", \"main police se contact karunga\", \"main case file karunga\",\n  \"main cyber cell mein report karunga\", \"data leak kar diya\", \"harassment hua hai\",\n  \"meri privacy violate hui\", \"main consumer forum jaunga\",\n  // Hindi\n  \"आत्महत्या\", \"परेशान\", \"धोखाधड़ी\", \"कोर्ट\", \"पुलिस\", \"धमकी\", \"शिकायत\",\n  \"मानसिक तनाव\", \"डिप्रेशन\", \"गोपनीयता\", \"साइबर सेल\", \"उपभोक्ता फोरम\", \"ठग\",\n  \"धोखा\", \"फ्रॉड\", \"कानूनी\",\"केस\", \"गैरकानूनी\", \"बदनाम\", \"चोरी\", \"हिरासत\", \"मानवाधिकार\",\n  \"अपमान\", \"डेटा लीक\",\n  // Marathi\n  \"कोर्ट\", \"फसवणूक\", \"फ्रॉड\", \"कायदेशीर\", \"पोलीस\", \"तक्रार\", \"धमकी\",\n  \"गुन्हा\", \"गैरकायदेशीर\", \"दाखल करीन\", \"तक्रार करणार\", \"मानहानी\", \"बात करनी है\", \"बात कर��ओ\", \"झूट\",\n  \"मानवाधिकार\", \"डेटा गळती\", \"गोपनीयता भंग\", \"हक्कांचे उल्लंघन\", \"सोशल मीडिया\",\n  \"आत्महत्या\", \"त्रास\", \"फसवणूक\", \"कोर्ट\", \"पोलिस\", \"धमकी\", \"तक्रार\", \"लीगल\",\n  \"मानसिक ताण\", \"डिप्रेशन\", \"गोपनीयता\", \"सायबर सेल\", \"ग्राहक मंच\", \"फसवणूक करणारे\",\n  // Telugu\n  \"ఆత్మహత్య\", \"పీల్చుకోవడం\", \"మోసం\", \"కోర్టు\", \"పోలీస్\", \"బెదిరింపులు\", \"ఫిర్యాదు\", \"స్కామ్ చేస్తారో ఏమో\",\n  \"నేను డౌట్ లో ఉన్నా\",\n  \"డౌట్ లో ఉన్నా\",\n  \"మానసిక ఒత్తిడి\", \"డిప్రెషన్\", \"గోప్యత\", \"సైబర్ సెల్\", \"వినియోగదారుల ఫోరం\", \"స్కామర్\",\n  \"కోర్టు\", \"మోసం\", \"ఫ్రాడ్\", \"చట్టపరమైన\", \"పోలీస్\", \"ఫిర్యాదు\",\n  \"బద్నాము\", \"హెచ్చరిక\", \"న్యాయ చర్య\", \"అవమానించు\", \"ప్రైవసీ ఉల్లంఘన\",\n  \"సైబర్ క్రైం\", \"దరఖాస్తు\", \"హక్కులు\", \"బ్లాక్ లిస్ట్\", \"డేటా లీక్\",\n  // Tamil\n  \"தற்கொலை\", \"துன்பம்\", \"மோசடி\", \"நீதிமன்றம்\", \"போலீஸ்\", \"மிரட்டல்\", \"புகார்\", \"மன அழுத்தம்\",\n  \"மனச்சோர்வு\", \"தனியுரிமை\", \"சைபர் செல்\", \"நுகர்வோர் மன்றம்\", \"ஊழலர்\",\n  \"நீதி\", \"முறைகேடு\", \"வஞ்சகம்\", \"போலீசில் புகார்\", \"குற்றச்சாட்டு\",\n  \"தவறானது\", \"முறையிடுவேன்\", \"தற்காலிக நடவடிக்கை\", \"குற்றம்\",\n  \"சட்டப்பூர்வமாக\", \"மிரட்டல்\", \"தமாஷா\", \"மிரட்டுகிறேன்\", \"இழிவுபடுத்துகிறீர்கள்\",\n  \"உணர்வுபூர்வமான தாக்கம்\", \"தகவல் கசியல்\", \"தரவரிசை பட்டியலில் சேர்த்தல்\", \"பிரைவசி மீறல்\", \"நீங்கள் மோசடிக்காரர்கள்\",\n  \"தொந்தரவு செய்யாதீர்கள்\", \"நபரிடம் பேச விரும்புகிறேன்\", \"இது சட்டவிரோதம்\", \"உங்களை சமூக ஊடகங்களில் பதிவிடுவேன்\",\n  \"ஏதாவது பிரச்சனை ஏற்பட்டால் உங்கள் மீது\", \"మీరు మోసగాళ్ళు\", \"ఇబ్బంది పెట్టకండి\", \"నాతో ఎవరో మాట్లాడాలి\", \"ఇది చట్ట విరుద్ధం\",\n  \"ట్వీట్ చేస్తాను\", \"మీరు నన్ను బ్లాక్ చెయ్యాలి\", \"నన్ను మోసం చేశారు\",\n \n];\n\n// --- Regex Fallbacks (can be expanded later) ---\nconst escalationRegexes = [\n/suicide|kill myself|end my life/i,\n/harass|harassment|mental stress|depression/i,\n/fraud|illegal|scam|scammer/i,\n/court|legal action|case file|lawsuit/i,\n/police.*(complain|report|contact)/i,\n/threat|violence|harm|abuse/i,\n/escalate|escalation/i,\n/privacy.*(leak|violate)/i,\n/cyber\\s*cell|consumer\\s*forum|blacklist/i,\n/आत्महत्या|खुदकुशी|मर(ूंगा|ूँगी)|जान ले लूंगा/i,\n/परेशान|मानसिक तनाव|डिप्रेशन/i,\n/धोखा|धोखाधड़ी|फ्रॉड|गैरकानूनी|अवैध/i,\n/कोर्ट|कानूनी कार्रवाई|केस/i,\n/पुलिस.*(शिकायत|रिपोर्ट|कॉन्टेक्ट)/i,\n/धमकी|हिंसा|अपमान|मानहानि/i,\n/बढ़ाऊंगा|बढ़ाना|एसकलेट/i,\n/गोपनीयता.*(भंग|लीक)/i,\n/साइबर\\s*सेल|उपभोक्ता\\s*फोरम/i,\n/आत्महत्या|खुदकुशी|मी मरेल|मी मरतो/i,\n/त्रास|मानसिक तणाव|डिप्रेशन/i,\n/फसवणूक|फ्रॉड|गैरकायदेशीर/i,\n/कोर्ट|कायदेशीर कारवाई|केस/i,\n/पोलीस.*(तक्रार|रिपोर्ट|संपर्क)/i,\n/धमकी|हिंसा|अपमान|मानहानी/i,\n/एसकलेट|वाढवीन/i,\n/गोपनीयता.*(भंग|लीक)/i,\n/सायबर\\s*सेल|ग्राहक\\s*मंच/i,\n/बात\\s*करनी\\s*है/i,\n/बात\\s*कराओ/i,\n/लीगल/i,\n/सोशल\\s*मीडिया/i,\n/ఆత్మహత్య|నేను చనిపోతాను|చంపుకుంటాను/i,\n/పీల్చుకోవడం|మానసిక ఒత్తిడి|డిప్రెషన్/i,\n/మోసం|ఫ్రాడ్|చట్టబద్ధం కాదు/i,\n/కోర్టు|చట్టపరమైన చర్య|కేసు/i,\n/పోలీస్.*(ఫిర్యాదు|రిపోర్ట్|సంప్రదించండి)/i,\n/బెదిరింపు|హింస|అవమానం/i,\n/ఎస్కలేట్|పెంచు/i,\n/గోప్యత.*(ఉల్లంఘన|లీక్)/i,\n/సైబర్\\s*సెల్|వినియోగదారుల\\s*ఫోరం/i,\n/స్కామ్\\s+చేస్తారో\\s+ఏమో\\b/,\n/నేను\\s+డౌట్\\s+లో\\s+ఉన్నా\\b/, \n/డౌట్\\s+లో\\s+ఉన్నా\\b/,\n/தற்கொலை|நான் என்னை கொல்வேன்/i,\n/துன்பம்|மன அழுத்தம்|மனச்சோர்வு/i,\n/மோசடி|ஊழல்|சட்டவிரோதம்/i,\n/நீதிமன்றம்|சட்ட நடவடிக்கை|கேஸ்/i,\n/போலீஸ்.*(புகார்|அறிக்கை|தொடர்பு)/i,\n/மிரட்டல்|அவமதி|அவமதிப்பு/i,\n/எஸ்கலேட்|உயர்த்துதல்/i,\n/தனியுரிமை.*(மீறல்|கசியல்)/i,\n/சைபர்\\s*செல்|நுகர்வோர்\\s*மன்றம்/i,\n/(main)?\\s*(mar jaunga|suicide karunga|mar dunga)/i,\n/pareshan|mental stress|depression/i,\n/fraud|illegal|scam|scammer/i,\n/court\\s*jaunga|legal action lunga|case file karunga/i,\n/police.*(complain|contact|report)\\s*karunga/i,\n/threat|maar dunga|violence|abuse/i,\n/escalate\\s*karunga/i,\n/privacy.*(leak|violate)/i,\n/cyber\\s*cell\\s*mein\\s*report\\s*karunga|consumer\\s*forum\\s*jaunga/i,\n/நீங்கள்\\s*மோசடிக்காரர்கள்/u,\n/தொந்தரவு\\s*செய்யாதீர்கள்/u,\n/நபரிடம்\\s*பேச\\s*விரும்புகிறேன்/u,\n/உங்களை\\s*சமூக\\s*ஊடகங்களில்\\s*பதிவிடுவேன்/u,\n/ஏதாவது\\s*பிரச்சனை\\s*ஏற்பட்டால்\\s*உங்கள்\\s*மீது/u,\n/நீங்கள்\\s*மோசகர்கள்/u,\n/இது\\s*சட்ட\\s*விருத्धம்/u,\n/ట్వీట్\\s*చేస్తాను/u,\n/మీరు\\s*మోసగాళ్ళు/u,\n/ఇబ్బంది\\s*పెట్టకండి/u,\n/నాతో\\s*ఎవరో\\s*మాట్లాడాలి/u,\n/మీరు\\s*నన్ను\\s*బ్లాక్\\s*చేయాలి/u,\n/నన్ను\\s*మోసం\\s*చేశారు/u\n];\n\nconst hasEscalationIntent =\n  escalationKeywords.some(phrase => text.includes(phrase)) ||\n  escalationKeywords.some(phrase => fuzzyIncludes(text, [phrase])) ||\n  escalationRegexes.some(re => re.test(text));\n\n\n// --- Output (include everything from input and add flag) ---\nconst original = $input.first().json;\n\nreturn [\n  {\n    json: {\n      ...original,\n      escalate: hasEscalationIntent\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4962,
+        530
+      ],
+      "id": "fcf4f00c-0343-4efe-b414-f2b5c67c4b0e",
+      "name": "Check Escalation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "15362d95-193e-40a4-a4c2-babdac8f07f5",
+              "leftValue": "={{ $('Check Escalation').item.json.escalate }}",
+              "rightValue": "=true",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "5d944797-3dc4-45ea-ba5e-421bab720cf4",
+              "leftValue": "={{ $json.isStopMessage }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1563cec5-594f-45ae-a4ef-bf5af31ff12e",
+              "leftValue": "={{ $json.refusal_to_pay }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4444,
+        530
+      ],
+      "id": "89e3c916-d779-4ff8-9022-ca78188dd72b",
+      "name": "If Escalate"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $('set account open').item.json.realid }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "escalation_required",
+              "fieldValue": "={{ $('If Escalate').item.json.escalate }}"
+            },
+            {
+              "fieldId": "journey_stage",
+              "fieldValue": "=escalated"
+            },
+            {
+              "fieldId": "dispute",
+              "fieldValue": "={{ $('Webhook').item.json.body.chatInput }}\n"
+            },
+            {
+              "fieldId": "DND_status",
+              "fieldValue": "={{ $('DND').item.json.isStopMessage }}"
+            },
+            {
+              "fieldId": "refusal_to_pay",
+              "fieldValue": "={{ $('Refusal to Pay detection').item.json.refusal_to_pay }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4004,
+        380
+      ],
+      "id": "0714907e-a428-43dc-b411-00d354fbeb1d",
+      "name": "Update Escalation in Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_WEBHOOK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"🚨Escalation Triggered!\\nName: {{ $('set account open').item.json.name }}\\nReal ID: {{ $('set account open').item.json.realid }}\\nTime: {{ new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4224,
+        380
+      ],
+      "id": "0b468630-e754-4e6e-80ef-e91987ea9477",
+      "name": "Send Slack Alert"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are PredixionAI, a professional, calm, polite, empathetic debt-collection virtual assistant.\n\nBorrower message: {{ $('Webhook').item.json.body.chatInput }}\nDetected language: {{ $('code to detect language').item.json.lang }}\n\nYour task is to respond in {{ $('code to detect language').item.json.lang }} only. Identify the borrower’s intent and choose the appropriate response type:\n\n🔴 If the borrower expresses serious concern or uses strong terms (e.g., “fraud”, “harassment”, “legal”, or shows emotional distress):\n- Thank them for reaching out\n- Apologize sincerely\n- Offer to escalate to a human support team\n- Keep a calm, non-judgmental tone\n\n🚫 If the borrower asks not to be contacted again (e.g., 'stop messaging', 'unsubscribe', 'don't disturb'):\n- Acknowledge the request\n- Apologize\n- Confirm no further messages will be sent\n\n💬 If the borrower refuses to pay (e.g., 'I won’t pay', 'not giving any money'):\n- Stay calm and acknowledge the message\n- Do not push for payment\n- Gently ask if it’s due to hardship\n- Offer possible solutions (EMI, deferment, reminders) in a supportive tone\n\n📌 The account is currently {{ $('Update Escalation in Supabase').item.json.pending_days }} days overdue. Use this to guide tone and add follow-up text:\n- If between 31-59 days: \"I see it’s been over 30 days since your payment was due. Could you share what challenges you’re facing? When do you think you’ll be able to clear it?\"\n- If between 60-89 days: \"Your payment has been overdue for quite a while (over 60 days). I completely understand this can happen due to difficult situations. Could you let me know what’s held you up and how we might assist?\"\n- If 90+ days: \"Your account is overdue by over 90 days. I truly want to support you. If you’re struggling financially, we can explore options like minimum payment plans, reminders, or connecting you to our specialist team. Could you share what’s been preventing the payment so far?\"\n\n💡 Extra helpful advice to include where appropriate:\n\"If you don’t have the funds now, that’s okay — we can set a reminder or explore flexible payment options.\"\n\"Paying even a small part can help keep your account in good standing.\"\n\"I can guide you on avoiding additional charges or legal notices — just let me know what support you need.\"\n\n🚫 NEVER push for payment after a refusal.  \n🔒 NEVER repeat or confirm any personal or financial information unless the borrower has already done so.  \n🗣️ Respond only in {{ $('code to detect language').item.json.lang }}. \nDo not show your thinking in the reply, only important information that will help the user, and do not use symbols like ',\" or * in your reply.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -3784,
+        280
+      ],
+      "id": "1363a5ac-e634-486d-971d-edde9018805a",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.sessionId }}\n",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -3636,
+        500
+      ],
+      "id": "466d6e82-4d41-44a1-90f3-c5b13ca72bd1",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4cb0d8f3-e3b0-4160-aed1-303823bc4e37",
+              "leftValue": "={{ $('If1').item.json.journey_stage }}",
+              "rightValue": "new",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -534,
+        930
+      ],
+      "id": "3d1320fd-34d0-40c6-bf5d-31d7ab643c56",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.realid }}\n"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "journey_stage",
+              "fieldValue": "=follow-up"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -236,
+        930
+      ],
+      "id": "b3a7a24c-5089-4c21-9e84-3c7df96d1283",
+      "name": "Update follow-up in Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('If1').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "refusal_to_pay",
+              "fieldValue": "={{ $json.refusal_to_pay }}"
+            },
+            {
+              "fieldId": "ptp_mode",
+              "fieldValue": "={{ $json.ptp_mode }}"
+            },
+            {
+              "fieldId": "ptp_captured",
+              "fieldValue": "={{ $json.ptp_intent }}"
+            },
+            {
+              "fieldId": "ptp_date",
+              "fieldValue": "={{ $json.ptp_date }}"
+            },
+            {
+              "fieldId": "ptp_amount",
+              "fieldValue": "={{ $json.ptp_amount }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1790,
+        380
+      ],
+      "id": "24187519-85fd-4949-9e66-ece5ac11d8fc",
+      "name": "Update PTP in Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const waData = $('Webhook').first().json;\nlet messageText = \"\";\n\nif (\n  waData &&\n  Array.isArray(waData.messages) &&\n  waData.messages[0] &&\n  waData.messages[0].text &&\n  typeof waData.messages[0].text.body === \"string\"\n) {\n  messageText = waData.messages[0].text.body;\n}\n\n// --- Normalize Hinglish and Indian Languages ---\nfunction normalizeStopText(text) {\n  return text\n    .toLowerCase()\n    .replace(/['\":;+=_*&^%$#@!~()\\[\\]{}<>,./\\\\|\\-]/g, \"\")\n    .replace(/\\b(mai|mei|mein|me)\\b/g, \"main\")\n    .replace(/\\b(mujhe|mujhko)\\b/g, \"\")\n    .replace(/\\b(karo|karna|karoge|karungi|karoongi|karunga|karonga|kar)\\b/g, \"karna\")\n    .replace(/\\b(mat)\\b/g, \"stop\")\n    .replace(/\\b(bhejo|bhejna|message karna|text karna|call karna|likhna|msg)\\b/g, \"message\")\n    .replace(/\\b(చెయ్యండి|చేయకండి|చెయ్యకండి|తీసేయండి|పంపొద్దు|పంపకండి)\\b/g, \"stop\")\n    .replace(/\\b(स्टॉप|बंद|रुको|हटाओ|सूचना)\\b/g, \"stop\")\n    .replace(/\\b(நிறுத்து|முடி|தவிர்|அனுப்பு|தகவல்கள்|பிளாக்)\\b/g, \"stop\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n\nconst normalizedText = normalizeStopText(messageText);\nconst normalizedFinal = normalize(normalizedText);\n\n\nfunction normalize(text) {\n  return text.toLowerCase().replace(/\\s+/g, \" \").trim();\n}\n\n// --- Phrase List (Multilingual, Hinglish, Typos accounted via fuzzy later) ---\nconst stopPhrases = [\n  // English\n  \"stop\", \"block my number\", \"take me off your list\", \"i dont want any more texts\",\n  \"i don't want any more messages\", \"i dont want messages\", \"stop texting\",\n  \"stop sending messages\", \"please stop\", \"please stop messaging\",\n  \"please stop messaging me\", \"stop messaging me\", \"stop messaging\",\n  \"stop calling\", \"don't text\", \"dont text\", \"don’t message again\",\n  \"do not disturb\", \"dnd\", \"unsubscribe\", \"remove me\", \"block me\",\n  \"leave me alone\", \"no more messages\", \"i said stop\", \"not interested\",\n  \"enough\", \"go away\", \"i want to block\", \"remove my number\",\n  \"already paid stop\", \"no need for reminder\", \"dont disturb me again\",\n  \"message off pls\", \"idc just stop texting me\", \"don't message again\", \"kthxbye\",\n  \"don’t contact me again\", \"never message again\", \"i’m done\", \"end this\",\n  \"please leave me alone\", \"please remove my number\", \"you are bothering me\",\n  \"i will report you\", \"stop sending these\", \"no more texts\",\n  \"stop now\", \"i'm not interested\", \"take me off\",\n  \"get rid of my number\", \"don’t ever text me again\", \"block this contact\",\n  \"you’re annoying\", \"this is spam\", \"leave me out of this\",\n  \"not okay with this\", \"not cool\", \"this is harassment\",\n  \"stop contacting me\", \"cut it out\", \"delete my number\",\n  \"you are disturbing me\", \"this is too much\", \"halt messages\",\n  \"don’t remind me again\", \"don’t want your messages\", \"shut this down\",\n  \"do not engage\", \"get lost\", \"forget my number\",\n  \"just stop already\", \"final warning\", \"stop everything\",\n  \"full stop\", \"no more notifications\", \"stop bothering me\",\n\n  // Hinglish\n  \"stop bhejo\", \"stop message karna\", \"stop call karna\", \"stop karo\",\n  \"dobara message stop\", \"dubara stop likhna\", \"block karna\",\n  \"unsubscribe karna\", \"message stop bhejna\", \"pareshan mat karo\",\n  \"meri number hatao\", \"mera number hata do\", \"dubara mat message karna\",\n  \"mujhe mat message karo\", \"mat call karo\", \"mat message bhejna\",\n  \"karz band karo\", \"emi mat bhejna\", \"list se hata do\", \"message mat karo\",\n  \"pls mujhe message mat karo\", \"disturb mat karo\", \"already bola\",\n  \"bas ab band karo\", \"ab koi message mat bhejna\", \"kitni baar bola message band karo\",\n  \"mujhe messages nahi chahiye\", \"message mat bhejna\", \"stop karna ab\",\n  \"mujhe shanti chahiye\", \"pareshan mat karo baar baar\", \"dobara text mat karna\",\n  \"mujhe call mat karna\", \"mera number hata do list se\", \"mujhe block karo\",\n  \"message kyu kar rahe ho\", \"bar bar mat karo\", \"bar bar pareshan mat karo\", \"pay kar diya\", \"already paid\", \"paid already\", \"pehle hi pay kiya\", \"payment done\",\n  \"kya problem hai tumhe\", \"stop it now\", \"stop texting pls\",\n  \"mat likhna ab\", \"mujhe nahi sunna\", \"mat contact karna\", \"meri privacy disturb mat karo\",\n  \"mat bhejo kuch\", \"mujhe ignore karo\", \"message band karo ab\", \"list me mat rakho\",\n  \"kuch mat bhejo\", \"mujhe akela chhodo\", \"mat likhna dobara\", \"message off karo\",\n  \"message bhejna bandh karo\", \"pls stop it yaar\", \"stop this nonsense\",\n  \"mujhe time waste mat karo\", \"ab nahi chahiye kuch\", \"no message anymore pls\",\n  \"bas karo yaar\", \"mujhe disturb karna band karo\", \"message spamming mat karo\",\n  \"apni service band karo mere liye\", \"mujhe shanti se jeene do\",\n  \"bar bar call kyu kar rahe ho\", \"meri bat suno stop karo\",\n  \"abhi ke baad message mat bhejna\", \"meri number list se hatao pls\",\n  \"bhot ho gaya ab\", \"dubara mat karna contact\", \"stop texting mujhe\",\n  \"mujhe bother mat karo\", \"ab kuch bhi mat bhejna\", \"mat likhna aur\", \"chukaya fir bhi message aa raha\",\n\"chuka diya fir bhi message aa raha\",\n\"payment kar diya fir bhi message aa raha\",\n\"paise diye fir bhi message aa raha\",\n\"maine chuka diya fir bhi message aata hai\",\n\"maine payment kiya fir bhi disturb kar rahe ho\",\n  \"mujhe is list se hatao\", \"tumse koi baat nahi karni\", \"pls karz mat yaad dilao\",\n  \"mujhe message dekhna bhi nahi hai\", \"dobara message mat bhejna\", \"payment kiya fir bhi message aata hai\",\n  \"meri request suno aur stop karo\", \"emi ke message mat bhejna\",\n  \"mujhe peace chahiye\", \"stop messageing immediately\", \"block me now\",\n\n\n  // Hindi (Devanagari)\n  \"मैसेज मत करो\", \"संदेश मत भेजो\", \"परेशान मत करो\", \"कॉल मत करो\",\n  \"मैसेज बंद करो\", \"मुझे हटाओ\", \"अनसब्सक्राइब\", \"डू नॉट डिस्टर्ब\",\n  \"डीएनडी\", \"अब संपर्क न करें\", \"मैं परेशान हूँ\", \"प्लीज बंद करो\",\n  \"पुनः कॉल न करें\", \"अब कॉल न करें\", \"पैसे नहीं दूंगा\",\n  \"मुझे मैसेज मत भेजो\", \"अब मैसेज मत करो\", \"कृपया कॉल न करें\",\n  \"मुझे अकेला छोड़ दो\", \"कृपया मुझे न भेजें\", \"अब भेजना बंद करो\",\n  \"स्टॉप कर दो\", \"मैंने मना किया है\", \"अब कोई सूचना नहीं चाहिए\",\n  \"मुझे लिस्ट से हटा दो\", \"मेरा नंबर ब्लॉक करो\", \"बार बार मैसेज करके परेशान मत करो\",\n  \"ये harassment है\" , \"अब ब्लॉक कर दो\", \"मुझे तंग मत करो\", \"अब बस करो\",\n  \"कृपया रोक दीजिए\", \"मुझे शांति चाहिए\", \"मैसेज करना बंद करो\",\n  \"कृपया अब मैसेज न भेजें\", \"कृपया डिस्टर्ब न करें\", \"मुझे और मैसेज नहीं चाहिए\",\n  \"अब कुछ मत भेजो\", \"मुझे बख्श दो\", \"अब कॉल मत करना\",\n  \"कृपया मुझे हटाएं\", \"सूचना भेजना बंद करें\", \"बार-बार कॉल मत करो\",\n  \"मुझे बार-बार मैसेज मत भेजो\", \"मैं पहले ही मना कर चुका हूँ\", \"मुझे तंग मत कीजिए\", \"मैंने पहले ही पेमेंट कर दिया है\",\n\"मैंने पहले ही भुगतान कर दिया है\",\n\"मैंने पहले ही पैसे दे दिए हैं\",\n\"पहले ही पैसे दे दिए हैं\",\n\"पहले ही पेमेंट कर दिया\",\n\"पहले ही भुगतान कर दिया\",\n\"मैंने पैसे दे दिए हैं\",\n\"मैं पहले ही चुका चुका हूँ\",\n\"पहले ही चुका दिया है\",\n\"मैंने पहले ही दे दिया\",\n\"बार बार क्यों\",\n\"कितनी बार बताऊँ\",\n\"कितनी बार कहा\",\n\"बार बार मेसेज क्यों\",\n\"बार बार याद मत दिलाओ\",\n\"मैंने पहले ही चुका दिया\",\n\"पहले ही दे चुका हूँ\",\n\"बार बार क्यों पूछ रहे हो\",\n\"अब परेशान मत करो\",\n\"मैंने पहले ही सब दे दिया है\",\n  \"कृपया ध्यान दें और रुक जाएं\", \"अब कोई जानकारी नहीं चाहिए\",\n  \"मुझे अपना नंबर हटवाना है\", \"कृपया परेशान न करें\", \"मैसेज की ज़रूरत नहीं\",\n  \"अब मैसेज न आए\", \"कृपया अब रुक जाइए\", \"कोई कॉल नहीं चाहिए\",\n  \"मैं थक चुका हूँ\", \"परेशान होना बंद करो\", \"मुझे ब्लॉक कर दो\",\n  \"सूचनाएं रोक दीजिए\", \"मैसेज बंद कीजिए\", \"बस करो अब\",\n  \"मुझे यह सब नहीं चाहिए\", \"कृपया छोड़ दो\", \"अब सब बंद करो\",\n  \"अब कुछ भी मत भेजना\", \"अब चैन से जीने दो\", \"मैं शांति चाहता हूँ\",\n  \"मुझे शांति से रहने दो\", \"आपका मैसेज नहीं चाहिए\", \"कोई कॉल न करें\",\n  \"बस अब और नहीं\", \"कृपया इस नंबर को हटाएं\", \"अब डिस्टर्ब न करें\",\n  \"मैं जवाब नहीं दूँगा\", \"कृपया बार-बार न भेजें\", \"आपका मैसेज परेशान कर रहा है\",\n  \"कोई मैसेज मत भेजना\", \"मुझे हटा दो\", \"मैसेजिंग बंद करें\",\n\n\n  // Marathi\n  \"संदेश पाठवू नका\", \"कॉल करू नका\", \"मला त्रास देऊ नका\", \"थांबा\",\n  \"डीएनडी\", \"ब्लॉक करा\", \"माझा नंबर काढा\", \"माझ्याशी संपर्क साधू नका\",\n  \"अनसब्स्क्राईब करा\", \"मला मेसेज करू नका\", \"मला कॉल करू नका\",\n  \"मला पुन्हा त्रास देऊ नका\", \"मला त्रास होतो आहे\", \"पुन्हा संपर्क साधू नका\",\n  \"मला शांतता हवी आहे\", \"माझं ऐका थांबा\", \"परत पाठवू नका\",\n  \"परत मेसेज नको\", \"पुरे झाले आता\", \"आता कोणताही मेसेज नको\",\n  \"मला यादीतून हटवा\", \"मला अजिबात मेसेज नकोत\", \n  \"कृपया मला आता मेसेज करू नका\", \"मेसेज पाठवणे थांबवा\",\n  \"मला त्रास होत आहे\", \"माझं लक्ष वेधू नका\", \"माझा नंबर यादीतून काढा\",\n  \"कृपया त्रास देणे थांबवा\", \"डिस्टर्ब करू नका\", \"पुन्हा संपर्क करू नका\",\n  \"माझ्याशी संपर्क बंद करा\", \"माझी शांतता भंग करू नका\",\n  \"कृपया मला कॉल करू नका\", \"माझ्या नंबरवर मेसेज पाठवू नका\",\n  \"पुन्हा कॉल करू नका\", \"माझी विनंती ऐका\", \"कृपया थांबा\",\n  \"कृपया काहीही पाठवू नका\", \"माझ्या जीवनात हस्तक्षेप करू नका\", \"संपर्क करू नका\", \"पेमेंट केला तरी मेसेज येतोय\",\n  \"माझ्याशी संवाद थांबवा\", \"तुमचा मेसेज नको\", \"बंद करा सर्व\",\n  \"माझं म्हणणं ऐका\", \"माझी वैयक्तिकता राखा\", \"आता त्रास नको\",\n  \"डिस्टर्ब करणे थांबवा\", \"खूप झाला त्रास\", \"आता कंटाळा आला आहे\",\n  \"माझ्या नंबरवरून मेसेज हटवा\", \"पुन्हा त्रास दिल्यास तक्रार करेन\",\n  \"कृपया माझ्याशी संपर्क साधू नका\", \"माझा संयम सुटत आहे\",\n  \"माझा वेळ वाया घालवू नका\", \"माझं म्हणणं समजून घ्या\",\n  \"कृपया यादीतून वगळा\", \"आता तुमचा त्रास सहन होत नाही\",\n  \"माझा नंबर त्वरित हटवा\", \"पुन्हा एकही मेसेज नको\",\n  \"माझ्या नावावरून हटवा\", \"माझं डिस्टर्ब होणं बंद करा\",\n\n  // Telugu\n  \"మెసేజ్ పంపకండి\", \"పిలవకండి\", \"పరేశాన్ చేయకండి\", \"డిఎన్డి\",\n  \"అన్సబ్స్క్రైబ్ చేయండి\", \"నన్ను విడిచిపెట్టు\", \"ఇంకా సందేశాలు వద్దు\",\n  \"నన్ను తొలగించు\", \"పిలవడం మానండి\", \"ఇంకా కాల్ వద్దు\", \"తొలగించండి\",\n  \"నన్ను మళ్లీ కలవకండి\", \"పలుకరించకండి\", \"ఇంకా ట్రబుల్ వద్దు\",\n  \"ఇప్పటికే చెల్లించాను\", \"ఇక పంపొద్దు\",\n  \"ఎంత సేపు చెప్తున్నా స్టాప్ చెయ్యండి\", \"స్టాప్ చెయ్యండి\",\n  \"స్టాప్ చేయండి\", \"ఇక పంపకండి\", \"లిస్ట్ నుండి నా నెంబర్ తీసేయండి\",\n  \"నన్ను లిస్ట్ నుండి తీసేయండి\", \"నాకు మెసేజ్ పంపొద్దు\",\n  \"మళ్లీ మెసేజ్ చేయవద్దు\", \"ఇక వదలండి\", \"నా నంబర్ బ్లాక్ చేయండి\",\n  \"దయచేసి ఇక మేము మెసేజ్ పంపకండి\", \"నాకు మెసేజ్ అవసరం లేదు\",\n  \"ఇక సమాచారం పంపవద్దు\", \"నాకు డిస్టర్బ్ అవుతుంది ఇక మయమవ్వండి\",\n  \"pls message చేయద్దు\", \"ఇప్పుడు మాకు సందేశాలు అవసరం లేదు\",\n  \"ఇంకా ఏవీ పంపవద్దు\", \"నన్ను వదిలిపెట్టు\", \"ఇంకా ఫోన్ చేయవద్దు\",\n  \"దయచేసి మమ్మల్ని బ్లాక్ చేయండి\", \"నాకు ఆ సమాచారం అవసరం లేదు\",\n  \"ఇప్పటికే చెప్పాను మరొకసారి చెప్పకండి\", \"ఇప్పటికే నేను చెప్పాను\",\n  \"చాలా అయ్యింది\", \"ఇంకా బాధ పెట్టకండి\", \"నన్ను ఒంటరిగా వదిలిపెట్టు\",\n  \"ఇంకా కలవవద్దు\", \"నాకు సమాచారం పంపవద్దు\", \"ఇంకా మెసేజ్ వద్దు\",\n  \"ఇంకా కాల్ వద్దు\", \"నన్ను తొలగించండి\", \"నాకు ట్రబుల్ వద్దు\",\n  \"నన్ను బ్లాక్ చేయండి\", \"ఇప్పటికే చెల్లించాను మళ్లీ మెన్షన్ చేయవద్దు\",\n  \"దయచేసి రిపీట్ చేయకండి\", \"ఇప్పటికే నేను చెప్పినాను\",\n  \"మళ్లీ attempt చేయకండి\", \"ఇంకా disturb చేయకండి\",\n  \"నాకు chain messages వద్దు\", \"నన్ను పూర్తిగా తొలగించండి\",\n  \"ఇప్పుడు రీప్లై ఇవ్వలేను\", \"ఇప్పటికే చాల ఉంది\",\n  \"ఇంకా attempt చేయడం మానండి\", \"ఇప్పటికే క్లియర్ చేశాను\", \n  \"మళ్లీ మెసేజ్ చేయకండి\",\n  \"దయచేసి ఇక మెసేజ్ పెట్టకండి\",\n  \"దయచేసి ఇక నాకు మెసేజ్ పెట్టకండి\",\n  \"ఇక మెసేజ్ పెట్టకండి\",\n  \"మెసేజ్ చేయకండి\",\n\n\n  // Tamil\n  \"செய்தி அனுப்ப வேண்டாம்\", \"என்னை தொந்தரவு செய்யாதே\",\n  \"அனுப்பாதே\", \"பேசாதே\", \"டிஎன்டி\", \"என்னை விலக்கு\",\n  \"மீண்டும் தொடர்பு கொள்ள வேண்டாம்\", \"சந்தேகத்தை ரத்து செய்\",\n  \"மீண்டும் மெசேஜ் அனுப்பாதே\", \"என்னை சுட்டிக்காட்டு\", \"அனுப்ப வேண்டாம்\",\n  \"தொந்தரவு செய்யாதே\", \"மீண்டும் அழைக்காதே\",\n  \"மீண்டும் disturb செய்யாதே\", \"வேண்டாம்\", \"பணம் கொடுத்துவிட்டேன்\",\n  \"இப்போவதும் அனுப்பாதே\", \"நிறுத்து\", \"விடு எனை\",\n  \"தயவுசெய்து இனிமேல் எனக்கு மெசேஜ் அனுப்ப வேண்டாம்\",\n  \"மெசேஜ் அனுப்பாதீர்கள்\", \"எனக்கு இனிமேல் தகவல்கள் தேவையில்லை\",\n  \"எனது எண்ணை உங்கள் பட்டியலில் இருந்து நீக்கவும்\",\n  \"எனக்கு மெசேஜ் வேண்டாம்\", \"என் எண்ணை பிளாக் செய்யவும்\",\n  \"எவ்வளவு முறை சொல்வேன் மெசேஜ் அனுப்பாதீங்க\",\n  \"தயவுசெய்து மெசேஜ் அனுப்பாதீர்கள்\", \"டிஸ்டர்ப் பண்ணாதீங்க\",\n  \"எனக்கு தகவல்கள் தேவையில்லை\", \"இனிமேல் தொடர்பு வேண்டாம்\",\n  \"என்னை அழைக்காதீர்கள்\", \"பணத்தை கட்டிவிட்டேன்\",\n  \"எனது எண்ணை நீக்குங்கள்\", \"மீண்டும் disturb பண்ணாதீர்கள்\",\n  \"தயவுசெய்து விட்டுவிடுங்கள்\", \"தகவல்கள் வேண்டாம்\",\n  \"மீண்டும் call செய்யாதீர்கள்\", \"நான் குழப்பத்தில் இருக்கிறேன்\",\n  \"இனிமேல் SMS வேண்டாம்\", \"பட்டியலில் இருந்து என் பெயரை நீக்குங்கள்\",\n  \"தொந்தரவு வேண்டாம்\", \"நான் பிரச்சனையில் இருக்கிறேன்\",\n  \"பேச வேண்டாம்\", \"மீண்டும் முயற்சிக்க வேண்டாம்\",\n  \"தயவுசெய்து ரிப்பீட் செய்யாதீர்கள்\", \"தகவலுக்கு தேவையில்லை\",\n  \"பேசிக்கொண்டே இராதீர்கள்\", \"நிறுத்துங்கள்\", \"தயவுசெய்து விட்டுவிடுங்கள்\",\n  \"பிளாக் செய்யுங்கள்\", \"மீண்டும் disturb செய்ய வேண்டாம்\",\n  \"தகவல் அனுப்ப வேண்டாம்\", \"பதிலளிக்க முடியாது\",\n  \"இனிமேல் எதுவும் வேண்டாம்\", \"நான் விரும்பவில்லை\",\n  \"மீண்டும் மீண்டும் மெசேஜ் அனுப்பாதீர்கள்\",\n\"தயவுசெய்து இனிமேல் தொடர்பு கொள்ள வேண்டாம்\",\n\"என்னை வம்பு விடாதீங்க\",\n\"மெசேஜ் அனுப்பாதீங்க தயவுசெய்து\"\n];\n\n// --- Regex Patterns ---\nconst stopRegexPatterns = [\n  /\\b(dnd|डू नॉट डिस्टर्ब|डीएनडी|unsubscribe|remove me|block me|message off|stop now|stop pls|stop karna|band karo|block karo)\\b/i,\n  /\\bplease\\s+stop(?:\\s+\\w+){0,3}/i,\n  /\\bstop\\s+(messaging|texting|calling|contacting)\\b/i,\n  /stop\\s+(message|call|karna|bhejo|likhna|message)/i,\n  /परेशान\\s+मत\\s+करो/i,\n  /message\\s+stop\\b/i,\n  /leave\\s+me\\s+alone/i,\n  /\\b(take|remove|get)\\s+me\\s+(off|from)\\s+(your\\s*)?list\\b/i,\n  /i\\s+(no\\s+longer|dont|do\\s+not)\\s+(wish\\s+to|want\\s+to)\\s+(receive|get)\\s+(any\\s+)?(more\\s+)?messages?/i,\n  /\\bno\\s+(more\\s+)?(texts|messages|calls|information)\\b/i,\n  /already\\s+paid\\s+stop/i,\n  /payment\\s*(kiya|kar\\s*diya|de\\s*diya|chuka\\s*(diya)?)\\s*(hai)?\\s*(fir\\s*bhi)?\\s*(message|message)\\s*(aa\\s*raha|aata)\\s*hai?/i,\n  /emi\\s+(band|stop|mat\\s+bhejna)/i,\n  /loan\\s+(messages|reminders)\\s+(band|stop)/i,\n  /చెయ్యండి|చెయ్యకండి|పంపించవద్దు|ఇక\\s+మర్చిపోండి|తీసేయండి|లిస్ట్\\s+నుండి\\s+నా\\s+నెంబర్\\s+తీసేయండి|పంపకండి/i,\n  /अब\\s+(भेजना|बंद)\\s+करो|स्टॉप\\s+कर\\s+दो|मैंने\\s+मना\\s+किया\\s+है|अब\\s+सूचना\\s+नहीं\\s+चाहिए/i,\n  /परत\\s+(पाठवू|मेसेज)\\s+नका|पुरे\\s+झाले/i,\n  /मी\\s+आधीच\\s+(पैसे|भरणा|पेमेंट)\\s+(दिलेलो|दिले|केला)\\s+(आहे|आहेत|आहेय)/i,\n/आधीच\\s+(पेमेंट|पैसे|भरणा)\\s+झालं\\s+आहे/i,\n/पुन्हा\\s+का\\s+पाठवताय/i,\n/किती\\s+वेळा\\s+सांगू/i,\n/पुन्हा\\s+(मेसेज|संदेश)\\s+पाठवू\\s+नका/i,\n  /இப்போவதும்\\s+அனுப்பாதே|நிறுத்து|விடு\\s+எனை|பிளாக்\\s+செய்யவும்|தகவல்கள்\\s+தேவையில்லை/i,\n  /\\bstop\\s+(all|everything|spam|this)\\b/i,\n/\\b(quit|cancel|exit|end)\\s+(conversation|chat|messages)?\\b/i,\n/\\b(mat\\s+message\\s+karna|dobara\\s+mat\\s+bhejna|mat\\s+bhejna|karna\\s+band|mat\\s+karna)\\b/i,\n/\\b(block\\s+kardo|meri\\s+number\\s+hatado|message\\s+mat\\s+karna|stop\\s+kardo)\\b/i,\n/\\b(mujhe\\s+shanti\\s+chahiye|mat\\s+contact\\s+karna|message\\s+mat\\s+bhejo)\\b/i,\n  /\\bdon['’]?t\\s+message\\b/i,\n/मुझे\\s+फिर\\s+से\\s+संदेश\\s+मत\\s+भेजो/i,\n/अब\\s+संपर्क\\s+मत\\s+करो|मुझे\\s+परेशान\\s+न\\s+करें/i,\n/कृपया\\s+रोक\\s+दो|बंद\\s+कर\\s+दो|बंद\\s+कीजिए/i,\n/फिर\\s+से\\s+कॉल\\s+न\\s+करें|कॉल\\s+बंद\\s+करो/i,\n/माझा\\s+क्रमांक\\s+काढा|मला\\s+शांतता\\s+हवीये/i,\n/पुन्हा\\s+संपर्क\\s+करू\\s+नका|कृपया\\s+थांबा/i,\n/संदेश\\s+थांबवा|मला\\s+अवांछित\\s+मेसेज\\s+नकोत/i,\n/माझ्यावर\\s+ताण\\s+येतो\\s+आहे|नको\\s+मेसेज/i,\n/మళ్లీ\\s+పంపించవద్దు|నన్ను\\s+శాంతిగా\\s+ఉంచండి/i,\n/నాకు\\s+కోపం\\s+వస్తోంది|పిలవకండి/i,\n/మరల\\s+మెసేజ్\\s+పంపవద్దు|కాల్\\s+చేయవద్దు/i,\n/తప్పించండి\\s+నన్ను|ప్లీజ్\\s+ఆపు/i,\n/దయచేసి\\s+ఇక\\s+(నాకు\\s+)?మెసేజ్\\s+(చేయకండి|పెట్టకండి)\\b/,\n/మళ్లీ\\s+మెసేజ్\\s+చేయకండి\\b/,\n/మెసేజ్\\s+చేయకండి\\b/,\n/தயவுசெய்து\\s+நிறுத்துங்கள்|பேசாதே\\s+ப்ளீஸ்/i,\n/மீண்டும்\\s+அனுப்பாதே|என்னை\\s+தொந்தரவு\\s+செய்யாதே/i,\n/செய்திகளை\\s+நிறுத்து|என்னை\\s+விலக்கு\\s+செய்யவும்/i,\n/பேசி\\s+என்னை\\s+தொந்தரவு\\s+செய்தீர்கள்|செய்தி\\s+வேண்டாம்/i,\n  /\\bமெசேஜ்\\s+அனுப்பாதீர்கள்\\b/i,\n/\\bமெசேஜ்\\s+அனுப்பாதீங்க\\b/i,\n/\\bஇனிமேல்\\s+தொடர்பு\\s+கொள்ள\\s+வேண்டாம்\\b/i,\n/\\bதொடர்பு\\s+கொள்ள\\s+வேண்டாம்\\b/i,\n/\\bவம்பு\\s+விடாதீங்க\\b/i,\n/\\bமீண்டும்\\s+மெசேஜ்\\s+அனுப்ப\\b/i,\n/\\b(dobara\\s+mat\\s+karna|dubara\\s+mat\\s+karna|barbar\\s+mat\\s+karna)\\b/i,\n/\\b(mujhe\\s+call\\s+mat\\s+karna|call\\s+karna\\s+band\\s+karo)\\b/i,\n/\\b(msg|message)\\s+karna\\s+mat\\b/i,\n/\\b(mat\\s+bhejna|mat\\s+bhejna\\s+dubara|mat\\s+bhejo|bhejna\\s+mat)\\b/i,\n/\\b(pareshan\\s+mat\\s+karna|pareshan\\s+mat\\s+karo)\\b/i,\n/\\b(mujhe\\s+chor\\s+do|chor\\s+do\\s+mujhe|mujhe\\s+akela\\s+chhodo)\\b/i,\n/\\b(kya\\s+problem\\s+hai|kyu\\s+barbar\\s+kar\\r+rahe\\s+ho|kyu\\s+kar\\s+rahe\\s+ho)\\b/i,\n/\\b(stop\\s+it|please\\s+stop\\s+it|mat\\s+kar\\s+yeh)\\b/i,\n/\\b(meri\\s+shanti\\s+bhango\\s+mat|mujhe\\s+shanti\\s+se\\s+rehne\\s+do)\\b/i,\n  /\\b(pehle\\s+hi|maine)?\\s*(payment|pay|paise|chuka)\\s*(kar\\s*(diya|diya\\s+hai)?|kiya\\s+hai|diya\\s+hai|kar\\s+diya\\s+hai)?\\s*(fir\\s+bhi|phir\\s+bhi|ab\\s+kyo|ab\\s+kyun)?\\s*(msg|message|messages?)?\\b/i,\n/\\b(mujhe\\s+free\\s+mein\\s+rehne\\s+do|dobara\\s+disturb\\s+mat\\s+karna)\\b/i,\n/\\b(ab\\s+nahi\\s+chahiye|nahi\\s+karna\\s+baat|ab\\s+bas\\s+karo)\\b/i\n];\n\n// --- Fuzzy Matching ---\nfunction levenshtein(a, b) {\n  const m = [];\n  for (let i = 0; i <= b.length; i++) m[i] = [i];\n  for (let j = 0; j <= a.length; j++) m[0][j] = j;\n  for (let i = 1; i <= b.length; i++) {\n    for (let j = 1; j <= a.length; j++) {\n      m[i][j] = b[i - 1] === a[j - 1] ? m[i - 1][j - 1] :\n        Math.min(m[i - 1][j - 1] + 1, m[i][j - 1] + 1, m[i - 1][j] + 1);\n    }\n  }\n  return m[b.length][a.length];\n}\n\nfunction fuzzyIncludes(text, phrases, threshold = 1) {\n  const words = text.split(\" \");\n  for (let phrase of phrases) {\n    const phraseWords = phrase.split(\" \");\n    for (let i = 0; i <= words.length - phraseWords.length; i++) {\n      let window = words.slice(i, i + phraseWords.length).join(\" \");\n      if (levenshtein(window, phrase) <= threshold) return phrase;\n    }\n  }\n  return null;\n}\n\n\n// --- Final Check ---\nconst isStopMessage =\n  stopPhrases.some(phrase =>\n    normalize(normalizedFinal).includes(normalize(phrase))\n  ) ||\n  stopRegexPatterns.some(rx => rx.test(normalizedFinal)) ||\n  fuzzyIncludes(normalizedText, stopPhrases, 1) !== null;\n\n\nconst originalInput = $input.first().json;\noriginalInput.isStopMessage = isStopMessage;\noriginalInput.debug = {\n  normalizedText,\n  matchedPhrase: stopPhrases.find(phrase =>\n  normalize(normalizedFinal).includes(normalize(phrase))\n) || fuzzyIncludes(normalizedText, stopPhrases, 2) || \"none\",\n};\n\nreturn [originalInput];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4664,
+        530
+      ],
+      "id": "eda4003b-1ef2-46f0-b58f-acbb42fdef16",
+      "name": "DND"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "76003af6-7f13-4e67-b08b-eeea4dd02b55",
+              "leftValue": "={{ $json.DND_status.toString()}}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3188,
+        680
+      ],
+      "id": "f36ca78f-8956-4aff-a27c-a276463e3913",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_WEBHOOK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"⛔ Message blocked due to DND setting.\\nReal ID: {{ $('Webhook').item.json.body.realid }}\\nMessage: {{ $('Webhook').item.json.body.chatInput }}\\nTime: {{ new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2968,
+        780
+      ],
+      "id": "79b3829a-5b4f-419c-84db-8c0a360acbd2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "[YOUR_SLACK_WEBHOOK_URL]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"✅ Account Marked as Closed\\nReal ID: {{ $('Webhook').item.json.body.realid }}\\nMessage: {{ $('Webhook').item.json.body.chatInput }}\\nTime: {{ new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) }}\\nPlease review if closure was not already logged.\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5480,
+        230
+      ],
+      "id": "79542eba-2b74-40f7-bbe0-83968e432216",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are PredixionAI, a calm, polite, and professional debt-collection virtual assistant. A borrower has replied that their account is already closed, settled, or fully paid.\n\nYour task is to respond in {{ $('code to detect language').item.json.lang }} only. \nReply ONLY in the same language and script as above, following the rules exactly.\n\nUse the language detection code results which categorize the message as one of these:\n\n- \"english\"\n- \"marathi\" (Devanagari script)\n- \"hindi\" (Devanagari script)\n- \"tamil\"\n- \"telugu\"\n- \"hinglish\" (Hindi written in Roman script)\n\nRules:\n\n1. If the detected language is \"english\", reply only in English.\n\n2. If \"marathi\", reply in Marathi using Devanagari script.\n\n3. If \"hindi\", reply in Hindi using Devanagari script.\n\n4. If \"tamil\", reply in Tamil script.\n\n5. If \"telugu\", reply **in Telugu script**.\n\n6. If \"hinglish\", reply in Hindi using Roman (Latin) script ONLY — \n   - DO NOT use Devanagari script for hinglish replies.\n   - Hinglish means Hindi words typed with English letters.\n   - Example: For \"mera paisa nahi hai\", reply: \"Main samajhta hoon. Aapke paas abhi paisa nahi hai...\"\n\nYour response should:\n\n- Acknowledge the update respectfully\n\n- Thank them for the information\n\n- Reassure them that their record will be updated\n\n- Invite them to reply in case of any discrepancy\n\n- Do not mention any pending amount or continue the collection process.\n\n- While addressing the user, do not write, 'Dear [Borrower Name]'. Instead respond by 'Dear {{ $json.name }}'",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -5040,
+        130
+      ],
+      "id": "492774ff-27fb-4b0b-8d3d-e9a6592b20c9",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -4892,
+        350
+      ],
+      "id": "b9ce9581-c44d-4631-8cfd-4a338544c78a",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nlet rawText = ($('Webhook').first().json.body?.chatInput || \"\").toLowerCase();\n\n// --- Normalize text ---\nfunction normalizeText(text) {\n  return text\n    .replace(/[’‘]/g, \"'\") // Fix smart apostrophes\n    .replace(/\\bi['’`]m\\b/gi, \"i am\")\n    .replace(/[.,\\/#!$%\\^&\\*;:{}=\\-_`~()\\\"\\']/g, \"\")\n    .replace(/\\s+/g, \" \")\n    .replace(/\\bnahi+\\b/g, \"nahi\")\n    .replace(/\\bnah\\b/g, \"nahi\")\n    .replace(/\\bmat\\b/g, \"nahi\")\n    .replace(/\\bpymnt\\b|\\bpym\\b|\\bpaymnt\\b/g, \"payment\")\n    .replace(/\\bpaise\\b/g, \"paisa\")\n    .replace(/\\bkarunga\\b/g, \"kar paunga\")\n    .replace(/\\bmain\\b/g, \"main\")\n    .replace(/\\bwont\\b/gi, \"won't\")\n    .trim();\n}\n\nconst text = normalizeText(rawText);\n\n// --- Refusal Phrases ---\nconst refusalPhrases = [\n  // English\n  \"won't pay\", \"will not pay\", \"cant pay\", \"can't pay\", \"refuse to pay\", \"no payment\",\n  \"not paying\", \"stop payment\", \"don't want to pay\", \"i am not paying\", \"i won't be able to pay\",\n  \"unable to pay\", \"not possible to pay\", \"can't clear\", \"no money\", \"paisa nahi hai\",\n  \"payment not possible\", \"payment ruk gaya\", \"payment on hold\", \"no cash\", \"can't settle\", \"not gonna happen\", \"nope not paying\", \"ain't happening\", \"dream on\", \"keep dreaming\", \"no chance\", \"not happening\", \"forget it\", \"nah bro\", \"not in this life\",\n\n  // Hinglish\n  \"main nahi dunga\", \"main paisa nahi dunga\", \"main nahi bharunga\",\n  \"main clear nahi karunga\", \"main payment nahi karunga\", \"payment nahi hoga\",\n  \"abhi nahi de sakta\", \"abhi paisa nahi hai\", \"main ruk gaya hoon\",\n  \"main baad mein dunga\", \"main nahi kar paunga\", \"abhi mushkil hai\",\n  \"thoda time do\", \"abhi nahi ho payega\", \"main nahi de paunga\",\n\n  // Hindi (Devanagari)\n  \"मैं पैसे नहीं दूँगा\", \"मैं भुगतान नहीं करूँगा\", \"मैं नहीं चुका सकता\",\n  \"मैं नहीं दे सकता\", \"मैं नहीं दूँगा\", \"अभी पैसे नहीं हैं\", \"मैं अभी नहीं चुका पाऊँगा\",\n  \"अभी नहीं हो पाएगा\", \"मैं नहीं कर पाऊँगा\", \"थोड़ा समय दीजिए\", \"मैं अभी नहीं भर सकता\",\n  \"पैसे नहीं है\", \"पैसे नहीं हैं\", \"पैसे नहीं दूँगा\", \"मैं कोई पेमेंट नहीं कर रहा\",\n\n  // Marathi\n  \"मी पैसे देणार नाही\", \"मी भरणा करणार नाही\", \"मी देऊ शकत नाही\",\n  \"मी पैसे भरू शकत नाही\", \"भरणा करणार नाही\", \"मी नकार देतो\",\n  \"पैसे नाहीत\", \"आता शक्य नाही\", \"थोडा वेळ द्या\", \"पैसे भरता येणार नाही\", \"मी पेमेंट करणार नाही\", \"मी कोणताही पेमेंट करणार नाही\", \"मी देणार नाही\", \"मी पैसे देणार नाही\", \"मी देऊ शकत नाही\", \"देणं शक्य नाही\", \n\"मी पैसे भरू शकत नाही\", \"मी नाही देणार\", \"पैसे नाहीत\", \"मी भरणा करणार नाही\", \n\n  // Telugu\n  \"నేను చెల్లించలేను\", \"నేను ఇవ్వలేను\", \"నేను చెల్లించను\", \"నేను తిరస్కరిస్తున్నాను\",\n  \"ఇప్పుడే చెల్లించలేను\", \"చెల్లించలేను\", \"ఇప్పుడే డబ్బు లేదు\",\n  \"చెల్లించటం సాధ్యం కాదు\", \"అవకాశం లేదు\", \"చెల్లించనన్నాను\", \"ఇప్పట్లో కుదరదు\", \"నేను చెల్లించను\",\n  \"చెల్లించను\",\n  \"నేను ఎలాంటి చెల్లింపూ చేయను\",\n  \"నేను చెల్లించను అంటున్నా\",\n  \"ఇది మోసం\", \"డబ్బు లేదు\",\n  \"ఇప్పుడు డబ్బు లేదు\",\n  \"నాకు డబ్బు లేదు\",\n  \"ఇంటి సమస్యలు\",\n  \"డబ్బు లేదు ఇంటి సమస్యలు\",\n\n  // Tamil\n  \"நான் பணம் தர மாட்டேன்\", \"நான் செலுத்த முடியாது\", \"நான் மறுக்கிறேன்\", \"பணம் இல்லை\",\n  \"நான் தர முடியாது\", \"இப்போ முடியாது\", \"நான் கட்டணத்தை செலுத்த மாட்டேன்\",\n  \"பணம் இல்லை\", \"சாத்தியமில்லை\", \"நான் செலுத்த மாட்டேன்\", \"நான் மறுக்கின்றேன்\", \"நான் பணம் செலுத்தமாட்டேன்\", \"இது மோசடி\",  \n\"நான் பணம் கொடுக்க மாட்டேன்\",\n\"நான் எந்த கட்டணமும் செலுத்த விரும்பவில்லை\",\n\"இப்போதைக்கு எனக்கு பணமில்லை\",\n\"எத்தனை தடவை சொல்வேன்\"\n];\n\n// --- Flexible regex matches ---\nconst refusalRegexes = [\n  /\\b(won[’']?t|will\\s+not|can't|cannot|dont|refuse|unable|not)\\s+(be\\s+)?(pay|paying|make\\s+payment|clear|give)\\b/i,\n  /\\bi\\s+(am\\s+)?not\\s+(going\\s+to\\s+)?(pay|make\\s+payment|clear|give)(\\s+anything)?\\b/i,\n  /\\bमी\\s+(कोणताही\\s+)?(पेमेंट|भरणा|पैसे)\\s+करणार\\s+नाही\\b/i,\n  /\\b(payment|paisa)\\s+(not|nahi|nhi|ruk\\s+gaya|stopped?)\\b/i,\n  /\\bno\\s+(money|payment|cash)\\b/i,\n  /\\bmain\\s+nahi\\s+(dunga|de\\s+(paunga|sakta)|bharunga|kar\\s+(sakta|paunga))\\b/i,\n  /\\bpaise\\s+nahi\\s+(hai|denge|de\\s+(paunga|sakta))\\b/i,\n  /\\babhi\\s+nahi\\s+(ho\\s+payega|possible|hai|de\\s+(paunga))\\b/i,\n  /\\b(can[’']?t|cannot)\\s+afford\\b/i,\n  /\\b(मैं|मे)\\s+(पेमेंट|पैसे|भुगतान)\\s+नहीं\\s+(दे|कर)\\s+(रहा|पाऊँगा|पारहा|सकता)\\b/i,\n  /\\bमी\\s+(पैसे\\s+)?देणार\\s+नाही\\b/i,\n  /\\bpayment\\s+nahi\\s+hoga\\b/i,\n  /\\bநான்\\s+பணம்\\s+செலுத்தமாட்டேன்\\b/i,\n  /\\bमैं\\s+पैसे\\s+नहीं\\s+दूंगा\\b/i,\n  /\\bपैसे\\s+नहीं\\s+(हैं|है|देना|होगा|देऊ\\s+शकत)\\b/i,\n  /\\bभुगतान\\s+नहीं\\s+(होगा|कर\\s+सकता|है)\\b/i,\n  /\\bచెల్లించలేను\\b/i,\n  /నేను\\s+చెల్లించను\\b/,\n  /చెల్లించను\\s+అంటున్నా\\b/,\n  /నాకు\\s+(ఇప్పుడు\\s+)?డబ్బు\\s+లేదు\\b/,\n  /డబ్బు\\s+లేదు\\b/,\n  /డబ్బు\\s+లేదు[.,]?\\s+ఇంటి\\s+సమస్యలు\\b/,\n  /ఇంటి\\s+సమస్యలు\\b/,\n  /నేను\\s+ఎలాంటి\\s+చెల్లింపూ\\s+చేయను\\b/,\n  /ఇది\\s+మోసం[.,]?\\s+నేను\\s+చెల్లించను\\b/,\n  /\\bநான்\\s+செலுத்த\\s+மாட்டேன்\\b/i,\n  /\\bபணம்\\s+இல்லை\\b/i,\n  /\\bநான்\\s+பணம்\\s+கொடுக்க\\s+மாட்டேன்\\b/i,\n/\\bஎந்த\\s+கட்டண(ம்)?\\s+செலுத்த\\s+விரும்பவில்லை\\b/i,\n/\\bஎனக்கு\\s+பணம்\\s+இல்லை\\b/i,\n/\\bஇது\\s+மோசடி\\b/i,\n/\\bபணம்\\s+செலுத்த\\s+மாட்டேன்\\b/i,\n/\\bபணம்\\s+கொடுக்க\\s+மாட்டேன்\\b/i,\n/\\bநான்\\s+செலுத்த\\b.*\\bமாட்டேன்\\b/i,\n/\\bஎத்தனை\\s+தடவை\\s+சொல்வேன்\\b.*\\bமாட்டேன்\\b/i\n];\n\n// --- Levenshtein Distance ---\nfunction levenshtein(a, b) {\n  const matrix = [];\n  const lenA = a.length, lenB = b.length;\n\n  for (let i = 0; i <= lenB; i++) matrix[i] = [i];\n  for (let j = 0; j <= lenA; j++) matrix[0][j] = j;\n\n  for (let i = 1; i <= lenB; i++) {\n    for (let j = 1; j <= lenA; j++) {\n      if (b.charAt(i - 1) === a.charAt(j - 1)) {\n        matrix[i][j] = matrix[i - 1][j - 1];\n      } else {\n        matrix[i][j] = Math.min(\n          matrix[i - 1][j - 1] + 1, // substitution\n          matrix[i][j - 1] + 1,     // insertion\n          matrix[i - 1][j] + 1      // deletion\n        );\n      }\n    }\n  }\n\n  return matrix[lenB][lenA];\n}\n\n// --- Fuzzy Match with Levenshtein ---\nfunction fuzzyMatch(text, phrases, threshold = 2) {\n  const words = text.split(/\\s+/);\n  const windows = [];\n\n  // Generate sliding windows of 2–5 words\n  for (let size = 2; size <= 5; size++) {\n    for (let i = 0; i <= words.length - size; i++) {\n      windows.push(words.slice(i, i + size).join(' '));\n    }\n  }\n\n  return windows.some(window =>\n    phrases.some(phrase => levenshtein(window, phrase.toLowerCase()) <= threshold)\n  );\n}\n\n// --- Final Decision ---\nconst hasRefusalToPay =\n  refusalPhrases.some(phrase => text.includes(phrase.toLowerCase())) ||\n  fuzzyMatch(text, refusalPhrases) || \n  refusalRegexes.some(rx => rx.test(text));\n\n// --- Final Output ---\nreturn {\n  json: {\n    refusal_to_pay: hasRefusalToPay\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5260,
+        530
+      ],
+      "id": "d71c4121-36b5-4d13-9e7a-e5d37a82b302",
+      "name": "Refusal to Pay detection"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8e45e94a-8ae2-4d15-b0ef-6dd29d6baa0f",
+              "leftValue": "={{ $('If1').item.json.journey_stage }}",
+              "rightValue": "new",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -534,
+        230
+      ],
+      "id": "cd7f37bb-d9c9-45e3-9b79-18234fe8bbb3",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('If1').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "journey_stage",
+              "fieldValue": "=follow-up"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -236,
+        230
+      ],
+      "id": "6297e574-e7e9-4ee1-8f6c-ca2c4a066ac1",
+      "name": "Update follow-up in Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "<your_webhook_id>",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -8560,
+        380
+      ],
+      "id": "12bb3166-8ce1-4a4c-ac5f-8ced0da444d9",
+      "name": "Webhook",
+      "webhookId": "[YOUR_WEBHOOK_ID]"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"message\": {{ JSON.stringify($json.output) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        -4664,
+        230
+      ],
+      "id": "6db9ca58-fad6-4dde-8d5d-25b15e8ffcee",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"message\": {{ JSON.stringify($json.output) }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        -3408,
+        380
+      ],
+      "id": "4fd749f6-1050-45cd-8191-857d680e7caa",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"message\": {{ JSON.stringify($json.output) }},\n  \"highlight_button\": {{ $json.highlight_button }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        230
+      ],
+      "id": "95c8e909-3bb2-4fa3-bab9-3cac667035b1",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"message\": {{ JSON.stringify( $('AI Agent').item.json.output) }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        930
+      ],
+      "id": "8c03bc6f-c8db-4c0e-beee-3aa66c0aa70c",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"message\": {{ JSON.stringify($('Edit Fields').item.json.textBody) }}\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -2308,
+        680
+      ],
+      "id": "d0ce49f6-824b-4190-9671-b778a7f9713d",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "url": "=https://ipwho.is/{{ $('get row').item.json.ip }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7020,
+        460
+      ],
+      "id": "f99e15a7-4748-4735-a2dc-0bee93568171",
+      "name": "Ip Lookup",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -6800,
+        320
+      ],
+      "id": "c9dffd99-1dd7-46ec-8c2f-9abe361349b0",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- WhatsApp Message Info ---\nconst rawText = $input.first().json.body?.chatInput || \"\";\n\n\n// --- Normalize Common Typos ---\nfunction normalizeTypos(text) {\n  return text\n    .replace(/\\bthanx\\b/gi, \"thanks\")\n    .replace(/\\bthnx\\b/gi, \"thanks\")\n    .replace(/\\bthnks\\b/gi, \"thanks\")\n    .replace(/\\bthanku\\b/gi, \"thank you\")\n    .replace(/\\bgn\\b/gi, \"good night\")\n    .replace(/\\bbye+e*\\b/gi, \"bye\")\n    .replace(/\\bokay\\b/gi, \"ok\")\n    .replace(/\\bok\\b/gi, \"ok\")\n    .replace(/\\bokk+\\b/gi, \"ok\")\n    .replace(/\\bsahi\\b/gi, \"ok\")\n    .replace(/\\btata\\b/gi, \"bye\")\n    .replace(/\\bchalo\\b/gi, \"bye\")\n    .replace(/\\bacha\\b/gi, \"ok\")\n    .replace(/\\bacha theek\\b/gi, \"ok\")\n    .replace(/\\balright\\b/gi, \"ok\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Normalize Hinglish / Code-Mixed ---\nfunction normalizeHinglish(text) {\n  return text\n    .replace(/\\b(shukriya|dhanyavad|dhanyvaad)\\b/gi, \"thank you\")\n    .replace(/\\b(chalta hoon|nikalta hoon|nikal raha hoon)\\b/gi, \"bye\")\n    .replace(/\\b(theek hai|thik hai|tik hai|sahi hai)\\b/gi, \"ok\")\n    .replace(/\\b(bye bye|bye-bye)\\b/gi, \"bye\")\n    .replace(/\\b(ho gaya|done ho gaya|bas itna)\\b/gi, \"done\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Levenshtein Distance Fuzzy Matcher ---\nfunction fuzzyIncludes(input, variants, maxDistance = 2) {\n  function levenshtein(a, b) {\n    const matrix = Array.from({ length: b.length + 1 }, (_, i) => [i]);\n    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;\n    for (let i = 1; i <= b.length; i++) {\n      for (let j = 1; j <= a.length; j++) {\n        const cost = b[i - 1] === a[j - 1] ? 0 : 1;\n        matrix[i][j] = Math.min(\n          matrix[i - 1][j] + 1,     // deletion\n          matrix[i][j - 1] + 1,     // insertion\n          matrix[i - 1][j - 1] + cost // substitution\n        );\n      }\n    }\n    return matrix[b.length][a.length];\n  }\n\n  return variants.some(variant => levenshtein(input, variant) <= maxDistance);\n}\n\n// --- Process Text ---\nconst text = normalizeHinglish(normalizeTypos(rawText));\n\n// --- Keywords List (English + Hinglish + Multilingual) ---\nconst resetKeywords = [\n  \"thanks\", \"thank you\", \"bye\", \"done\", \"finished\", \"all good\", \"talk later\",\n  \"बाय\", \"धन्यवाद\", \"शुक्रिया\", \"ठीक है\", \"हो गया\", \"समाप्त\", \"धन्य\", \"चलेगा\", \"चले\", \n  \"गुड नाइट\", \"अलविदा\", \"नमस्ते\", \"थैंक यू\", \"चला जाता हूँ\", \"चली जाती हूँ\", \n  \"முடிந்தது\", \"நன்றி\", \"செல்கிறேன்\", // Tamil\n  \"ధన్యవాదాలు\", \"బై\", \"పోయాను\", \"చాలింది\", \"సరే\", // Telugu\n  \"धन्यवाद\", \"झाले\", \"ठिक आहे\", \"चालेल\", \"बाय\", \"गुड नाईट\" // Marathi\n];\n\n// --- Reset Detection ---\nconst shouldReset = resetKeywords.some(keyword => text.includes(keyword)) ||\n                    fuzzyIncludes(text, resetKeywords, 2);\n\n// --- Final Output ---\nreturn {\n  json: {\n    ...$input.first().json,\n    shouldReset\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8340,
+        380
+      ],
+      "id": "b6e1349a-985d-4415-aacb-9d82fdeefb26",
+      "name": "Check Reset"
+    },
+    {
+      "parameters": {
+        "mode": "delete",
+        "deleteMode": "all"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        -612,
+        530
+      ],
+      "id": "950162bc-9f16-424e-8a5f-c6708a4a65d0",
+      "name": "Chat Memory Manager1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9b1028d3-c116-46cd-b483-c689e59b1bf1",
+              "leftValue": "={{ $('Check Reset').item.json.shouldReset.toString() }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1052,
+        780
+      ],
+      "id": "0c6c645b-2405-46e4-b50b-18bee48bcd2e",
+      "name": "If8"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -524,
+        750
+      ],
+      "id": "90d56a0f-3ab6-49c0-9898-09a27f36683f",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"message\": {{JSON.stringify($('AI Agent').item.json.output) }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -236,
+        630
+      ],
+      "id": "e52221c7-d51f-4b3e-887e-3583a777bbbe",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c824a197-d077-4b6a-adae-b160643fbcb5",
+              "leftValue": "={{ $json.account_closed.toString() }}\n",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5700,
+        380
+      ],
+      "id": "88af340a-36be-4a6c-a317-6e95bc518d52",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -5920,
+        580
+      ],
+      "id": "cfd84028-558b-4c34-b4a9-0e48ce2ac161",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -5012,
+        350
+      ],
+      "id": "2a875ae5-88ae-4ba9-9482-bc04a9deb0da",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -3756,
+        500
+      ],
+      "id": "1c437f06-4f54-4fe0-858b-b02d31434c5a",
+      "name": "Azure OpenAI Chat Model1",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1492,
+        1000
+      ],
+      "id": "33cc2874-bc7d-4799-ab39-801c33c19412",
+      "name": "Azure OpenAI Chat Model2",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1840,
+        200
+      ],
+      "id": "ab7006e0-b8f4-49ef-bd85-e72405b9f427",
+      "name": "Azure OpenAI Chat Model3",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": " ",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1382,
+        230
+      ],
+      "id": "eb1b7247-2735-4fd6-830a-4f9d8b098646",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('If').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Filter",
+              "fieldValue": "Not Greeted"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        630
+      ],
+      "id": "ce324df2-7db6-4ef6-aaa5-ecd40a7c6f5b",
+      "name": "update to greeted1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cef1f916-9a87-4182-87e1-0c68f0a9d6e5",
+              "name": "content",
+              "value": "={{ $('Webhook').item.json.body.chatInput }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1790,
+        780
+      ],
+      "id": "852a149f-75ed-4541-81eb-dc884f6f2ad6",
+      "name": "Get Message Content"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    ...$json,                 // Includes Supabase3 + Ip Lookup data\n    city: $json.city ,    // Add city field\n    state: $json.region  // Add state field\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6580,
+        320
+      ],
+      "id": "06d5de02-00ee-4cad-a5f1-a01a712ceaa9",
+      "name": "getting the city and state"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input data\nconst input = $input.first().json;\n\n// Extract IP: x-forwarded-for (first part before comma)\nconst xfwd =($('Webhook').first().json.headers?.[\"x-forwarded-for\"] || \"\");\nconst ip = xfwd.split(\",\")[0].trim();\n\n// Add the IP field to the JSON\nreturn [\n  {\n    json: {\n      ...input,\n      ip: ip\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7680,
+        600
+      ],
+      "id": "14dc6dd4-a5c2-4231-8b63-758f3fc3fbbd",
+      "name": "getting the ip"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messageTextRaw = ($('Webhook').first().json.body?.chatInput || \"\").toLowerCase();\n\n\n\n\n// --- Text Normalization ---\nfunction normalize(text) {\n  return text\n    .toLowerCase()\n    .normalize(\"NFKD\")                    // Remove diacritics (if any)\n    .replace(/[\\u0300-\\u036f]/g, \"\")     // Diacritic marks\n    .replace(/[^\\w\\s\\u0900-\\u0D7F]/g, \"\") // Keep words & Indic Unicode\n    .replace(/\\s+/g, \" \")                // Collapse whitespace\n    .trim();\n}\n\nfunction escapeRegex(str) {\n  return str.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n}\n\nconst messageText = normalize(messageTextRaw);\n\n// --- Regex Patterns ---\nconst accountClosedRegexPatterns = [\n  /\\b(loan|account|dues|payment)s?\\s+(has|have|is|was|been)?\\s*(already\\s*)?(paid|cleared|settled|closed)\\b/i,\n  /\\bi\\s*(have|'ve)?\\s*(already\\s*)?(paid|settled|cleared|repaid|finished)\\s*(the)?\\s*(loan|payment|dues|amount)?\\b/i,\n  /\\b(my|the)?\\s*(loan|dues|account|payment)\\s+(is|are|was|has been)?\\s*(fully\\s*)?(settled|cleared|paid|closed)\\b/i,\n  /\\bi\\s*(don’t|do not|have no)\\s*(any\\s*)?(dues|pending|outstanding)\\b/i,\n  /\\b(payment|transaction)\\s+(was|has been|is)?\\s*(already\\s*)?(done|made|completed|processed)\\b/i,\n  /\\ball\\s*(payments|dues|emis?)\\s*(are|were|have been)?\\s*(done|cleared|settled|paid)\\b/i,\n  /\\b(account|loan)\\s+(has|is)?\\s*(been\\s*)?(closed|finished|terminated|settled)\\b/i,\n  /\\bi\\s*(am|’m)?\\s*(done|finished)\\s*(with)?\\s*(loan|payment|dues)\\b/i,\n  /मेरा\\s+खाता\\s+(बंद|क्लोज)\\s+(हो\\s+गया|है|हो\\s+चुका)\\b/i,\n  /लोन\\s+(सेटल|पूरा\\s+चुका)\\s+(हो\\s+गया|है|चुका\\s+हूँ)\\b/i,\n  /मैंने\\s+(पेमेंट|भुगतान)\\s+(कर\\s+दिया|पहले\\s+ही\\s+कर\\s+दिया)\\b/i,\n  /बकाया\\s+(नहीं|शेष\\s+नहीं|बाकी\\s+नहीं)\\b/i,\n  /मेरी\\s+तरफ\\s+से\\s+.*(कुछ\\s+भी\\s+)?(बकाया|देना)\\s+नहीं\\b/i,\n  /संपूर्ण\\s+(भुगतान|राशि)\\s+(चुका\\s+दी|हो\\s+चुका)\\b/i,\n  /account\\s+(band|close|deactivate)\\s+(ho\\s+gaya|kar\\s+diya)\\b/i,\n  /loan\\s+(clear|settled|repay|finish|close)\\s+(ho\\s+gaya|kar\\s+diya|ho\\s+chuka)\\b/i,\n  /maine\\s+(pehle\\s+hi\\s+)?(payment|paisa)\\s+kar\\s+diya\\b/i,\n  /kuch\\s+(bhi\\s+)?(due|pending|baki)\\s+nahi\\b/i,\n  /meri\\s+taraf\\s+se\\s+.*sab\\s+(done|clear)\\b/i,\n  /sab\\s+(payment|loan)\\s+kar\\s+diya\\b/i,\n  /खाते\\s+(बंद|क्लोज|संपले)\\s+(झाले|आहे|केले)\\b/i,\n  /लोन\\s+(फेडले|चुकवले|पूर्ण)\\s+(झाले|आहे|केले)\\b/i,\n  /मी\\s+(आधीच\\s+)?(पैसे|देय|भरणा)\\s+(केला|भरले)\\b/i,\n  /काही\\s+(ही\\s+)?(बकाया|देणं|उरलेलं)\\s+नाही\\b/i,\n  /ఖాతా\\s+(మూసివేశారు|ముగిసింది|డీఆక్టివేట్)\\b/i,\n  /లోన్\\s+(ఫినిష్|ముగిసింది|సెటిల్)\\s+(అయ్యింది|చేశాను)\\b/i,\n  /పూర్తిగా\\s+(చెల్లించాను|ఇచ్చాను|సర్దేశాను)\\b/i,\n  /బాకీ\\s+(లేదు|లేదని\\s+తెలిసింది)\\b/i,\n  /கணக்கு\\s+(மூடப்பட்டது|முடிந்தது|நிறைவடைந்தது)\\b/i,\n  /கடன்\\s+(முடிந்தது|செட்டில்\\s+ஆனது|முடிவடைந்தது)\\b/i,\n  /பணம்\\s+(செலுத்திவிட்டேன்|முடிந்தது|விட்டுவிட்டேன்)\\b/i,\n  /நிலுவை\\s+(இல்லை|எதுவும்\\s+இல்லை)\\b/i,\n];\n\n// --- Levenshtein Distance ---\nfunction levenshtein(a, b) {\n  const m = Array.from({ length: b.length + 1 }, (_, i) => [i]);\n  for (let j = 1; j <= a.length; j++) m[0][j] = j;\n  for (let i = 1; i <= b.length; i++) {\n    for (let j = 1; j <= a.length; j++) {\n      m[i][j] = b[i - 1] === a[j - 1]\n        ? m[i - 1][j - 1]\n        : Math.min(m[i - 1][j - 1] + 1, m[i][j - 1] + 1, m[i - 1][j] + 1);\n    }\n  }\n  return m[b.length][a.length];\n}\n\n// --- Fuzzy Includes ---\nfunction fuzzyIncludes(text, phrases, threshold = 1) {\n  const words = text.split(\" \");\n  for (let phrase of phrases) {\n    const normalizedPhrase = normalize(phrase);\n    const phraseWords = normalizedPhrase.split(\" \");\n    for (let i = 0; i <= words.length - phraseWords.length; i++) {\n      const window = words.slice(i, i + phraseWords.length).join(\" \");\n      if (levenshtein(window, normalizedPhrase) <= threshold) {\n        return phrase;\n      }\n    }\n  }\n  return null;\n}\n\n// --- Account Status Phrases (Normalized) ---\nconst accountStatusKeywords = [\n  // English\n  \"loan has been cleared\", \"the payment was already made\", \"i’ve paid the amount\",\n  \"i have cleared the dues\", \"i’ve already paid\", \"loan is settled\", \"i settled the loan\",\n  \"already settled the dues\", \"i’ve completed the payment\", \"my dues are paid\",\n  \"i cleared the entire amount\", \"i’ve already paid off the loan\", \"loan has been paid\",\n  \"i finished paying\", \"payment is already done\", \"account has been settled\", \"i’ve paid everything\",\n  \"already made the full payment\", \"i have no pending dues\", \"i’ve already paid everything\",\n  \"payment was done already\", \"it was already paid\", \"loan is fully paid\", \"loan has been closed\",\n  \"amount already cleared\", \"already given the payment\", \"i’ve sent the payment already\",\n  \"i repaid it already\", \"dues are cleared\", \"loan amount has been repaid\", \"i’m done paying\",\n  \"i’ve completed the dues\", \"i completed my payments\", \"my card is already closed\",\n  \"i have already cleared everything\", \"i settled everything\", \"already took care of the payment\",\n  \"i’m done with payments\", \"loan is completely paid\", \"i’ve repaid everything\",\n  \"i finished the payment last month\", \"i’m all paid up\", \"loan is no longer active\", \"there is nothing due\",\n  \"payment has already gone through\", \"i’ve made the necessary payment\", \"i’ve completed all the payments\",\n  \"i’ve cleared the loan dues\", \"account was paid in full\", \"already completed repayment\",\n  \"payment status is clear\", \"i paid in full\", \"everything is settled\", \"i have already paid it off\",\n  \"payment made successfully\", \"i have nothing to pay\", \"everything is clear from my side\",\n  \"i made the full payment already\", \"i cleared my balance\", \"i repaid the full amount\", \"my loan has ended\",\n  \"i completed my EMI\", \"all EMIs are cleared\", \"last payment was already made\", \"dues already taken care of\",\n  \"payment confirmation already received\", \"i have paid my dues\", \"payment done long back\", \"i paid long ago\",\n  \"i made the payment already\", \"i sent the payment already\", \"already paid last week\",\n  \"account is no longer active\", \"i closed the account\",\n\n  // Hindi\n  \"खाता बंद\", \"खाता बंद हो गया\", \"मेरा खाता बंद है\", \"खाता पहले ही बंद है\",\n  \"खाता पहले ही क्लोज है\", \"मेरा खाता क्लोज हो गया\", \"बैंक ने खाता बंद कर दिया है\",\n  \"मेरा अकाउंट पहले ही बंद है\", \"यह अकाउंट क्लोज है\", \"खाता बंद हो चुका है\", \"मेरे द्वारा अकाउंट क्लोज किया गया\",\n  \"बैंक ने मेरा खाता क्लोज कर दिया\", \"मेरा खाता सेटल हो चुका है\", \"सेटलमेंट हो चुका है\", \"अकाउंट का निपटान हो गया\",\n  \"सेटलमेंट कर दिया है\", \"मुझे कुछ नहीं देना\", \"बकाया नहीं है\", \"कोई बकाया नहीं\", \"मेरी तरफ कुछ भी बकाया नहीं है\",\n  \"मेरी तरफ से सब चुका दिया\", \"पैसा चुका चुका हूँ\", \"सब चुका दिया है\", \"मैं चुका चुका हूँ\", \"मैने सब चुका दिया है\",\n  \"मैंने भुगतान कर दिया है\", \"मैंने लोन चुका दिया है\", \"लोन चुकाया\", \"लोन चुका चुका हूँ\", \"लोन पूरा चुका दिया है\",\n  \"लोन खत्म\", \"लोन हो चुका है\", \"लोन खत्म हो गया\", \"लोन सेटल हो गया\", \"लोन निपटा दिया\", \"लोन बंद है\",\n  \"लोन खत्म कर दिया है\", \"मैंने पहले ही दे दिया\", \"मैंने भुगतान कर दिया\", \"मैं चुका चुका हूँ\",\n  \"मैंने पहले ही सेटल कर दिया\", \"मैंने निपटा दिया है\", \"मैंने पिछले महीने सेटल किया\", \"भुगतान पूरा हो चुका है\",\n  \"संपूर्ण भुगतान हो चुका है\", \"पूरा चुका दिया\", \"सभी देनदारियां चुका दी\", \"सब भर चुका हूँ\", \"पैसा भर चुका हूँ\",\n  \"पैसा चुका दिया है\", \"मैंने भर दिया है\", \"मैंने पेमेंट कर दिया\", \"मैंने पेमेंट पहले ही कर दिया\",\n  \"अभी हाल ही में भुगतान किया\", \"पिछले सप्ताह पेमेंट किया\", \"पिछले महीने सेटल किया\", \"मुझे कुछ नहीं देना है\",\n  \"कोई राशि लंबित नहीं है\", \"मुझे कुछ नहीं देना बाकी\", \"कोई भी देनदारी नहीं बची\", \"सिस्टम में देरी हो सकती है\",\n  \"मैंने रसीद भेज दी है\", \"पैसे दिए जा चुके हैं\", \"मेरे पास रसीद है\", \"ट्रांजेक्शन हो चुका है\",\n  \"ट्रांजेक्शन की पुष्टि हो चुकी है\", \"पेमेंट हो गया\", \"पेमेंट पहले ही हो गया\", \"अकाउंट से पैसे कट चुके हैं\",\n  \"मेरे खाते से कट चुका है\", \"मैंने पूरा भुगतान कर दिया है\", \"मैंने अपनी जिम्मेदारी पूरी कर दी\", \"लोन से पूरी तरह मुक्त हूँ\",\n\n  // Hinglish\n  \"account band\", \"loan clear ho gaya\", \"paisa de diya\", \"payment ho gaya\", \"sab bhar diya\", \"khatam ho gaya\",\n  \"loan over\", \"already diya\", \"clear kar chuka\", \"settled ho gaya\", \"koi pending nahi\", \"done paying\",\n  \"all paid\", \"done with loan\", \"payment completed\", \"already cleared\", \"account close ho gaya\", \"pura paisa diya\",\n  \"pura payment kar diya\", \"sab payment ho gaya\", \"maine sab de diya\", \"maine sab bhar diya\", \"maine pay kar diya\",\n  \"maine pehle hi pay kiya\", \"maine pehle hi payment kiya\", \"maine pehle hi de diya\", \"sab paisa chuka diya\",\n  \"paisa chuka diya hai\", \"maine payment kar diya hai\", \"maine pehle hi nipta diya\", \"sab settle kar diya\",\n  \"card close ho gaya\", \"card already closed\", \"card settle ho gaya\", \"loan already paid\", \"no pending amount\",\n  \"account already closed\", \"already settled\", \"maine pehle hi settle kiya\", \"maine clear kar diya\",\n  \"maine pichle month settle kiya\", \"maine clear kar chuka hoon\", \"sab clear ho gaya\", \"account khatam ho gaya\",\n  \"account already clear\", \"ye loan band ho chuka hai\", \"kuch nahi dena\", \"baki kuch nahi\", \"kuch bhi baki nahi\",\n  \"loan repay kar diya\", \"sab kuch repay ho gaya\", \"maine sab repay kiya\", \"maine pura paisa diya\",\n  \"maine sab kuch nipta diya\", \"meri taraf se sab done\", \"meri taraf se sab clear\", \"meri taraf se kuch pending nahi\",\n  \"maine already clear kar diya\", \"maine close karwa diya\", \"account deactivate ho gaya\", \"account deactivate kar diya\",\n  \"maine loan ka settlement kar diya\", \"settlement ho chuka hai\", \"payment already ho gaya\", \"pehle hi payment ho gaya\",\n  \"loan already clear ho gaya\", \"account already band hai\", \"maine sab clear kar diya\", \"meri taraf se kuch bhi due nahi\",\n  \"maine already sab nipta diya hai\", \"mera loan finish ho gaya\", \"maine pura nipta diya\", \"maine full settlement kar liya\",\n  \"maine sab settle kar diya\", \"account already finish hai\", \"meri taraf kuch bhi pending nahi\", \"loan already close ho gaya\",\n  \"maine settle kar chuka hoon\", \"maine pehle hi sab clear kiya\", \"meri taraf sab complete hai\", \"payment sab done hai\",\n  \"account close kar diya\", \"maine already transfer kar diya\", \"maine already sab bhar diya\", \"mere end se sab clear hai\",\n\n\n\n  // Marathi\n  \"खाते बंद\", \"खाते क्लोज\", \"खाते क्लिअर\", \"खाते फुली पेमेंट\", \"खाते डिऍक्टिवेट\", \"खाते डिएक्टिव्हेट झालं\",\n  \"खाते कधीच उघडलं नाही\", \"माझं खाते बंद झालं\", \"माझं खाते क्लोज झालं आहे\", \"खाते पूर्ण बंद\",\n  \"लोन पूर्ण\", \"लोन क्लिअर\", \"लोन क्लोज\", \"लोन संपला\", \"लोन फेडला\", \"कर्ज फेडले\", \"कर्ज भरले\",\n  \"कर्ज चुकवले\", \"कर्ज पूर्ण\", \"सेटल केलं\", \"सेटल झालं\", \"मी सेटल केलं\", \"संपले\", \"संपलेलं आहे\",\n  \"संपले आहे\", \"बिल भरले\", \"बिल फेडले\", \"भरणा केला\", \"भरणा पूर्ण\", \"भरणा केलाय\",\n  \"आधीच भरले\", \"देय दिले\", \"पैसे दिले\", \"पैसे भरले\", \"मी आधीच दिले\", \"मी आधीच भरले\",\n  \"सगळं दिलं\", \"सगळं चुकवून टाकलं\", \"सगळं सेटल केलं\", \"सगळं भरून टाकलं\", \"संपवले\",\n  \"निपटले\", \"काही बाकी नाही\", \"काहीही बाकी नाही\", \"काहीही देय नाही\", \"काही देयक नाही\", \"बकाया नाही\",\n  \"बकाया राहिलेली नाही\", \"आधीच पेमेंट झालं\", \"आधीच फेडलं\", \"फुल पेमेंट केलं\", \"पूर्ण भरणा झाला\",\n  \"माझं काम संपलं\", \"माझं क्लिअर झालं\", \"माझं अकाउंट क्लोज आहे\", \"बँकेने खाते क्लोज केलं\",\n  \"माझं खाते आधीच बंद\", \"सगळं करून टाकलं\", \"देणं लागतोच नाही\", \"देणं संपलं\", \"देणं दिलंय\",\n  \"कर्ज नाही\", \"लोन नाही\", \"फिनिश झालं\", \"डन झालं\", \"सगळं झाले\", \"निपटारा झाला\", \"अकाउंट संपलं\",\n  \"कोणताही पेमेंट नाही\", \"कोणतंही बकाया नाही\", \"माझं काही उरलेलं नाही\", \"मी सगळं सेटल केलं\",\n  \"सगळं पूर्वीच भरलंय\", \"गेल्या महिन्यात भरलं\", \"गेल्या वर्षी क्लोज केलं\", \"कर्ज फेडल्यामुळे खाते बंद\",\n  \"मी पैसे दिले\", \"मी पैसे भरले\", \"मी पेमेंट केलेलं आहे\", \"मी फुल पेमेंट केलं आहे\",\n  \"सगळा कर्ज फेडून टाकलं\", \"संपलेले पैसे\", \"अ‍ॅकाउंट क्लोज्ड\", \"खाते बंद झालेले\",\n  \"पैसे भरणं पूर्ण\", \"माझा कर्ज संपला\", \"मी आधीच कर्ज फेडले आहे\",\n  \"पैसे दिले आहेत\", \"माझं खाते पूर्ण क्लिअर झालं आहे\", \"खाते आता बंद आहे\", \"आता काही बकाया नाही\",\n  \"मी आधीच पेमेंट केलं\", \"पैसे भरून टाकले\", \"पैसे दिलेले आहेत\", \"मी आधीच देणं भरले\",\n  \"बँक खाते क्लोज्ड\", \"कर्ज फेडण्याची प्रक्रिया पूर्ण\", \"माझं लोन पूर्ण क्लिअर\", \"खाते डिएक्टिव्हेट\",\n  \"माझं अकाउंट पूर्णत: बंद\", \"मी अकाउंट क्लोज केलं\", \"संपूर्ण पेमेंट\", \"अकाउंट बंद आहे\",\n  \"मी फुली पेमेंट केली आहे\", \"कर्ज बंद झाले\", \"संपूर्ण पेमेंट झाले\", \"मी पूर्ण पैसे भरलेले आहेत\",\n  \"पैसा भरणं पूर्ण झालं\", \"आता काही बाकी नाही\", \"माझं खातं बंद झालंय\", \"पैसे पूर्ण दिले\",\n  \"मी आधीच पैसे दिलेले आहेत\", \"बँक खाते पूर्ण क्लोज\", \"पैसे भरले आहेत\", \"मी आधीच पैसे दिले\",\n  \"माझं काम पूर्ण झालं\", \"खाते पूर्ण क्लिअर\", \"खाते पूर्ण बंद\", \"मी आधीच पैसे भरले आहे\",\n  \"मी सर्व पैसे फेडले\", \"मी पेमेंट संपवले\", \"मी पैसे दिलेच आहेत\", \"पैसे दिले आहेत\", \"कर्ज संपलं आहे\",\n  \"पैसे फेडले आहेत\", \"अकाउंट पूर्ण बंद\", \"अकाउंट क्लिअर\", \"खाते पूर्ण संपलं\", \"मी आधीच पेमेंट पूर्ण केलं\",\n  \"सर्व पैसे भरले\", \"मी बकाया संपवले\", \"मी बँकेत पैसे भरले आहेत\", \"खाते बंद आहे\",\n  \"मी कर्ज फेडले आहे\", \"मी पैसे भरले आहेत\", \"मी माझं खाते बंद केलं आहे\", \"मी पेमेंट क्लिअर केलं आहे\",\n\n  // Telugu\n  \"ఖాతా మూసివేసారు\", \"ఖాతా మూసివేయబడింది\", \"ఖాతా మూసివేసింది\", \"ఖాతా ముగిసింది\", \"ఖాతా పూర్తయింది\",  \n  \"ఖాతా డీఆక్టివేట్ అయింది\", \"ఖాతా క్లియర్ అయింది\", \"ఖాతా డిసేబుల్ అయింది\", \"ఖాతా క్లోజ్ అయింది\",\n  \"లోన్ ముగిసింది\", \"లోన్ పూర్తయింది\", \"లోన్ క్లియర్ అయింది\", \"లోన్ ఫుల్ పేమెంట్ అయింది\",  \n  \"లోన్ ఫినిష్ అయింది\", \"లోన్ అయిపోయింది\", \"లోన్ సెటిల్ అయ్యింది\", \"లోన్ పూర్తి అయ్యింది\",\n  \"కార్డ్ సెటిల్ అయ్యింది\", \"కార్డ్ మూసివేశాను\", \"కార్డ్ క్లోజ్ చేసాను\",\n  \"పేమెంట్ అయింది\", \"పేమెంట్ పూర్తయింది\", \"పేమెంట్ పూర్తిగా చేశాను\", \"పేమెంట్ క్లియర్\",  \n  \"పూర్తిగా చెల్లించాను\", \"ఇప్పటికే చెల్లించాను\", \"ఇప్పటికే ఇచ్చాను\", \"మొత్తం చెల్లించాను\", \"అన్నీ ఇచ్చాను\",\n  \"నిన్నే చెల్లించాను\", \"గత వారం చెల్లించాను\", \"గత నెల చెల్లించాను\", \"గత సంవత్సరం సెటిల్ చేశాను\",  \n  \"ఫుల్ పేమెంట్ చేశాను\", \"పూర్తి మొత్తాన్ని ఇచ్చాను\", \"ఇక చెల్లించాల్సింది లేదు\", \"ఇక బాకీ లేదు\",\n  \"ఏమి పెండింగ్ లేదు\", \"ఏమి బకాయి లేదు\", \"ఎటువంటి బకాయి లేదు\", \"నాకు బకాయి లేదు\",  \n  \"ఇప్పటికే సర్దేశాను\", \"సెట్ అయ్యింది\", \"సెటిల్ చేశాను\", \"ఫినిష్ అయింది\", \"ఆఖరి చెల్లింపు అయ్యింది\", \"వసూలు పూర్తయింది\",\n  \"ఐతే నా దగ్గర నుంచి ఏమీ లేదు\", \"నా వద్ద ఏమీ లేదు\", \"నా దగ్గర క్లియర్ అయింది\", \"బ్యాంక్ ఖాతా మూసింది\",  \n  \"అవును, ఖాతా ముగిసింది\", \"ఇది పాత ఖాతా\", \"పాత ఖాతా సెటిల్ అయింది\", \"బాకీ ఉన్��దని అనుకోలేను\",\n  \"దీనికి నేను చెల్లించాను\", \"ఇది ఫుల్ పేచేసాను\", \"ఫుల్ క్లోజ్ చేసేశాను\", \"ఫైనల్ పేమెంట్ చేశాను\",  \n  \"ఇది గత రికవరీ\", \"ఇది అప్పుడే క్లియర్ చేశాను\", \"పూర్తిగా డన్ అయ్యింది\", \"పూర్తిగా వసూల్ అయింది\",\n  \"ఇది మూసేశారు\", \"ఇది డీ-యాక్టివేట్ అయింది\", \"ఇది పూర్వమే డన్\", \"నా బాధ్యత ముగిసింది\",  \n  \"నా పార్ట్ పూర్తయింది\", \"అంతా చేశాను\", \"సరిపెట్టేశాను\", \"ఇప్పటికే క్లియర్\", \"ఏమీ లేదు\",\n  \"ఇది ఆఖరి చెల్లింపు\", \"ఇది సెటిల్ అయింది\", \"సిస్టమ్‌లో లేట్ అప్‌డేట్ ఉంది\", \"ఇప్పటికే పంపించాను\",  \n  \"నేను చెల్లించాను\", \"ఇది ముదిరింది\", \"ఇది పాత పేమెంట్\", \"మా లావాదేవీ పూర్తయింది\",\n  \"ఈ ఖాతా పూర్తిగా ముగిసింది\", \"ఇది లాస్ట్ ట్రాన్సాక్షన్\", \"ఇది క్రెడిట్ అయింది\", \"మా వశం నుంచే ఏమీ లేదు\",  \n  \"పూర్తి బాధ్యత నెరవేర్చాను\", \"ఇది గత చెల్లింపు\", \"బాకీ లేదు అని తెలిసింది\",\n  \"నా ఖాతా ఇప్పటికే మూసివేయబడింది\", \"ఈ ఖాతా సెటిల్ అయిపోయింది\", \"నేను ఇప్పటికే చెల్లించాను\",  \n  \"నా వద్ద ఎలాంటి బకాయిలు లేవు\", \"బ్యాంక్ నా ఖాతాను మూసేసింది\", \"మీరు తప్పుగా సంప్రదిస్తున్నారు\",\n  \"గత నెలలోనే నేను క్లియర్ చేసేశాను\", \"ఖాతా ఫుల్ పే అయింది\", \"ఇది పాత ఖాతా, ఏమీ పెండింగ్ లేదు\",  \n  \"ఇక చెల్లించాల్సింది ఏమీ లేదు\", \"నేను బకాయి చెల్లించాను\", \"బకాయి పూర్తిగా తీర్చాను\", \"పూర్తిగా వసూలు చేసాను\", \"పూర్తిగా తీర్చేశాను\",\n  \"ఇప్పుడు నా దగ్గర ఎటువంటి బకాయి లేదు\", \"ఇక ఏమీ బాకీ లేదు\", \"ఇది క్లియర్ అయింది\", \"ఇది పూర్తిగా చెల్లించబడింది\",  \n  \"నేను బకాయి లేకుండా చెల్లించాను\", \"ఇది పూర్తిగా సెట్ అయ్యింది\",\n  \"బకాయి బిగించలేదు\", \"నేను ఫుల్ పే చేసాను\", \"ఇది డీ-యాక్టివేట్ చేయబడింది\", \"ఇది పూర్తిగా మూసివేసారు\", \"ఈ ఖాతాను పూర్తిగా ముగించాను\",\n\n  // Tamil\n  \"கணக்கு மூடப்பட்டது\", \"கணக்கு முடிந்தது\", \"கணக்கு முடிந்துவிட்டது\", \"கணக்கு நிறைவடைந்தது\",\n  \"கணக்கு முடிவு செய்யப்பட்டது\", \"கணக்கு முடிவடைந்துவிட்டது\", \"கடன் முடிந்தது\", \"கடன் முடிந்துவிட்டது\",\n  \"கடன் செட்டில் ஆனது\", \"கடன் முடிவடைந்தது\", \"கடன் தீர்ந்துவிட்டது\", \"கடன் முடிவடைந்துவிட்டது\",\n  \"பணம் செலுத்திவிட்டேன்\", \"பணம் செலுத்தப்பட்டது\", \"பணம் முடிந்தது\", \"பணம் முடிந்துவிட்டது\",\n  \"நான் பணம் கொடுத்துவிட்டேன்\", \"நான் ஏற்கனவே பணம் செலுத்திவிட்டேன்\", \"பணம் ஏற்கனவே கொடுத்துவிட்டேன்\",\n  \"பணம் எல்லாம் கொடுத்துவிட்டேன்\", \"ஏற்கனவே செலுத்திவிட்டேன்\", \"முழுமையாக செலுத்திவிட்டேன்\",\n  \"முழு தொகை செலுத்தியுள்ளேன்\", \"நான் ஏற்கனவே திருப்பிச் செலுத்திவிட்டேன்\", \"நான் செலுத்தி விட்டேன்\",\n  \"பணம் விட்டுவிட்டேன்\", \"பணம் முடிவடைந்தது\", \"செட்டில் செய்துவிட்டேன்\", \"செட்டில் ஆகிவிட்டது\",\n  \"செட்டில் ஆயிற்று\", \"செட்டில் செய்தேன்\", \"பாக்கி இல்லை\", \"எனக்கு எதுவும் நிலுவையில் இல்லை\",\n  \"எதுவும் நிலுவை இல்லை\", \"முழு தொகை கட்டிவிட்டேன்\", \"மொத்தம் செலுத்திவிட்டேன்\",\n  \"பணத்தை முழுமையாக கொடுத்தேன்\", \"பணப்பரிவர்த்தனை முடிந்தது\", \"இனி எதுவும் இல்லை\",\n  \"பணத்தை ஏற்கனவே விட்டுவிட்டேன்\", \"இனி கொடுக்க எதுவும் இல்லை\", \"முடிந்துவிட்டது\",\n  \"முடிந்துவிட்டேன்\", \"முடிவடைந்தது\", \"முடிவடைந்துவிட்டது\", \"பணக் கடன் முடிவடைந்தது\",\n  \"இது பழைய கணக்கு\", \"இது பழைய செட்டில்மென்ட்\", \"பணம் கொடுத்தேன்\",\n  \"பணத்தைச் செலுத்திவிட்டேன்\", \"பணப்பரிவர்த்தனை நிறைவடைந்தது\", \"கணக்கு முடிந்திருக்கிறது\",\n  \"நான் முடித்துவிட்டேன்\", \"நான் நிறைவேற்றிவிட்டேன்\", \"பொருள் முடிவடைந்தது\", \"இனி நிலுவை இல்லை\",\n  \"எல்லாம் முடிந்தது\", \"எல்லாம் முடிந்துவிட்டது\", \"பண விவரம் முடிந்தது\", \"நான் செய்ய வேண்டியது முடிந்துவிட்டது\",\n  \"இது முடிவடைந்த பதிவு\", \"இது மூடப்பட்ட கணக்கு\", \"முந்தைய பதிவு முடிவடைந்தது\",\n  \"நிலுவை தீர்ந்துவிட்டது\", \"நிலுவை முடிந்துவிட்டது\", \"நிலுவை முடிந்தது\", \"நிலுவை இல்லாதது\",\n  \"எனக்கு நிலுவை இல்லை\", \"என்னிடம் நிலுவை இல்லை\", \"ஏற்கனவே முடிந்துவிட்டது\",\n  \"ஏற்கனவே தீர்ந்துவிட்டது\", \"நிறைவடைந்தது\", \"நிறைவடைந்துவிட்டது\",\n  \"உங்கள் கணக்கில் பிழை இருக்கலாம்\",\n  \"தயவுசெய்து தொடர்பு கொள்ள வேண்டாம், கணக்கு முடிந்துவிட்டது\"\n\n];\n\n// --- Exact Match ---\nconst exactMatch = accountStatusKeywords.some(keyword => {\n  const kw = normalize(keyword);\n  const pattern = new RegExp(\n    `(^|\\\\s|[.,!])${escapeRegex(kw)}($|\\\\s|[.,!])`,\n    'i'\n  );\n  return pattern.test(messageText);\n});\n\n// --- Fuzzy Match (only for short messages) ---\nconst fuzzyMatch =\n  messageText.split(\" \").length <= 6\n    ? fuzzyIncludes(messageText, accountStatusKeywords, 1)\n    : null;\n\n// --- Regex Match ---\nlet matchedRegex = null;\nfor (const regex of accountClosedRegexPatterns) {\n  if (regex.test(messageText)) {\n    matchedRegex = regex.toString();\n    break;\n  }\n}\n\n// --- Final Decision ---\nlet accountClosed = exactMatch || !!fuzzyMatch || !!matchedRegex;\n\n// --- Output object ---\nconst originalInput = $input.first().json;\n\n// --- Negative overrides — explicitly deny intent to pay ---\nconst negativeIntent = [\n  /చెల్లించను\\b/,\n  /will\\s+not\\s+pay\\b/,\n  /i\\s+refuse\\s+to\\s+pay\\b/,\n  /मुझे\\s+पैसे\\s+नहीं\\s+देना/,\n  /यह\\s+धोखा\\s+है/,\n  /இது\\s+ஏமாற்றம்/,\n];\n\nfor (const neg of negativeIntent) {\n  if (neg.test(messageText)) {\n    accountClosed = false; // ✅ modifying existing `let`\n    originalInput.match_type = \"negativeOverride\";\n    break;\n  }\n}\n\n// --- Assign final outputs ---\noriginalInput.account_closed = accountClosed;\n\nif (!originalInput.match_type) {\n  originalInput.match_type = matchedRegex\n    ? \"regex\"\n    : fuzzyMatch\n    ? \"fuzzy\"\n    : exactMatch\n    ? \"exact\"\n    : \"none\";\n}\n\noriginalInput.debug = {\n  messageTextRaw,\n  messageLength: messageText.split(\" \").length,\n  matchedExact: exactMatch || false,\n  matchedFuzzy: fuzzyMatch || \"none\",\n  matchedRegex: matchedRegex || \"none\"\n};\n\nreturn [originalInput];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7900,
+        380
+      ],
+      "id": "bd6eeace-6b69-497b-ae89-ff88d08ea9d2",
+      "name": "check account closed"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "keyValue": "={{ $('Webhook').item.json.body.realid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7240,
+        305
+      ],
+      "id": "5906e860-e94b-4cdc-ba86-e64b69ab0d1a",
+      "name": "get row",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.realid }}\n"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ip",
+              "fieldValue": "={{ $json.ip }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7460,
+        305
+      ],
+      "id": "e93693e1-47b5-4fc6-95b2-5fddfbd2ae27",
+      "name": "update ip",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $json.realid }}\n"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "city",
+              "fieldValue": "={{ $json.city }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "={{ $json.state }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6360,
+        320
+      ],
+      "id": "33aaebd5-4f31-4f6b-9581-a2f5d1840e22",
+      "name": "updating the city and state",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "borrowers",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.realid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6140,
+        320
+      ],
+      "id": "91e6e20d-86b7-41a8-b055-5f4fd9da2582",
+      "name": "get data",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{$json.realid}}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "account_status",
+              "fieldValue": "open"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5480,
+        530
+      ],
+      "id": "d7af98ae-01a3-4345-b76a-0cf53b868dd4",
+      "name": "set account open",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{ $('If6').item.json.body.realid }}\n"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "account_status",
+              "fieldValue": "closed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5260,
+        230
+      ],
+      "id": "e4b5a65f-f9e0-4ed3-9e62-ef79af6326c0",
+      "name": "set account closed",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{$json.body.realid}}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "escalation_required",
+              "fieldValue": "={{ $('If Escalate').item.json.escalate }}"
+            },
+            {
+              "fieldId": "refusal_to_pay",
+              "fieldValue": "={{ $('Refusal to Pay detection').item.json.refusal_to_pay }}"
+            },
+            {
+              "fieldId": "DND_status",
+              "fieldValue": "={{ $('DND').item.json.isStopMessage }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        680
+      ],
+      "id": "1efb420b-fd2c-4ec1-a4e3-cfdb97e15c0b",
+      "name": "Update no escalation in Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.body?.chatInput || \"\";\n\n// --- Normalizer ---\nfunction normalizeHinglish(text) {\n  return text\n    .replace(/\\b(mai|mei|mein)\\b/gi, \"main\")\n    .replace(/\\b(ko|ke)\\b/gi, \"\")\n    .replace(/\\b(karo?ungi|karoongee|karoongi|karonga|karoonga|karunga)\\b/gi, \"karunga\")\n    .replace(/\\b(du?ngi|doongi|doongii|doongee|dunga|doonga)\\b/gi, \"dunga\")\n    .replace(/\\b(bharo?ungi|bharoongee|bharoongi|bharunga|bharoonga)\\b/gi, \"bharunga\")\n    .replace(/\\b(settle karungi|settle karoongi|settle karonga|settle karoonga)\\b/gi, \"settle karunga\")\n    .replace(/\\b(clear karungi|clear karoongi|clear karonga|clear karoonga)\\b/gi, \"clear karunga\")\n    .replace(/\\b(ho)\\b/gi, \"hoon\")\n    .replace(/\\b(paise|paisa|amount|due)\\b/gi, \"paisa\")\n    .replace(/\\b(tera|tumhara|mera|uska|apna|aapka)\\b/gi, \"apna\")\n    .replace(/\\b(kya|kyu|kaise|kab|kaun|kitna|kyuki|kyunki)\\b/gi, \"question\")\n    .replace(/\\b(nahi|ha|haan|h)\\b/gi, \"haan\")\n    .replace(/\\b(karo|karna|karta|karti|karunga|karungi)\\b/gi, \"karunga\")\n    .replace(/\\b(dunga|dungi|duga|doonga)\\b/gi, \"dunga\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// --- Language Detector ---\nfunction detectLang(raw) {\n  if (!raw || typeof raw !== \"string\" || raw.trim().length === 0) {\n    return \"unknown\";\n  }\n\n  const cleanText = raw.trim();\n  const normalized = normalizeHinglish(cleanText);\n\n  const hasTamil = /[\\u0B80-\\u0BFF]/.test(cleanText);\n  const hasTelugu = /[\\u0C00-\\u0C7F]/.test(cleanText);\n  const hasDevanagari = /[\\u0900-\\u097F]/.test(cleanText);\n\n  function devanagariMatch(word, text) {\n    const pattern = new RegExp(`(?:^|\\\\s|[^\\\\u0900-\\\\u097F])${word}(?=$|\\\\s|[^\\\\u0900-\\\\u097F])`);\n    return pattern.test(text);\n  }\n\n  // Hinglish detection (Roman Hindi with Hindi structure and keywords)\n  const hinglishKeywords = [\n  // Pronouns\n  \"main\", \"mein\", \"mai\", \"mujhe\", \"tum\", \"tera\", \"meri\", \"mera\", \"aapka\", \"ham\", \"hum\", \"usne\", \"vo\", \"woh\", \"apna\", \"apne\",\n\n  // Payment-related\n  \"payment\", \"paisa\", \"paise\", \"rupay\", \"rupee\", \"amount\", \"due\", \"udhaar\", \"karz\", \"emi\", \"balance\", \"baki\", \"interest\", \"installment\",\n\n  // Action Verbs\n  \"karunga\", \"karungi\", \"karunga\", \"karna\", \"kar diya\", \"kar dia\", \"kr dunga\", \"kr dunga\", \"kar doonga\", \"krunga\", \"krdo\", \"krdiya\",\n  \"dunga\", \"dungi\", \"doonga\", \"doongi\", \"dedunga\", \"dedoonga\", \"de diya\", \"de dia\", \"dia\", \"diya\",\n  \"bhej dunga\", \"bhejunga\", \"bhej diya\", \"bhej dia\", \"bhejdu\", \"bhej\", \"transfer karunga\", \"transfer\", \"pay karunga\", \"pay kar diya\",\n  \"settle\", \"clear\", \"repay\", \"repayment\", \"bhar dunga\", \"bharunga\", \"bharenge\", \"jama\", \"chukaunga\", \"chuka diya\", \"chuka dia\", \"chuka\",\n\n  // Time references\n  \"kal\", \"parso\", \"aaj\", \"abhi\", \"rakh do\", \"next week\", \"next month\", \"today\", \"tomorrow\", \"evening\", \"tonight\", \"soon\", \"baad me\", \"baad mein\", \"jaldi\", \"late\", \"delay\", \"postpone\", \"reschedule\",\n\n  // Promise/Excuse\n  \"pakka\", \"pakka se\", \"100%\", \"wada\", \"delay ho gaya\", \"wait\", \"late ho gaya\", \"net nahi tha\", \"work mein busy\", \"office\", \"salary nahi aayi\", \"salary ayegi\", \"salary ka wait\", \"bhool gaya\", \"missed\",\n\n  // General communication\n  \"bataunga\", \"bataungi\", \"message karunga\", \"msg karna\", \"batata hu\", \"phone karna\", \"call karna\", \"baat\", \"baat kar\", \"samjho\", \"sun\", \"suno\", \"response\", \"batayenge\", \"contact\",\n\n  // Helping/obligation phrases\n  \"madad\", \"help\", \"try karunga\", \"try karunga\", \"koshish\", \"attempt\", \"manage\", \"adjust\", \"handle\", \"dekh lunga\", \"dekh lunga\", \"manage kar lunga\", \"dekh lenge\",\n\n  // Common Hinglish Connectors\n  \"kyunki\", \"kyun\", \"kya\", \"kaise\", \"kab\", \"kitna\", \"jitna\", \"jab\", \"kyon\", \"matlab\", \"lekin\", \"agar\", \"fir\", \"phir\", \"toh\", \"par\", \"nahi\", \"haan\", \"theek\", \"acha\", \"sahi\", \"galat\", \"hoon\", \"hai\", \"tha\", \"raha\", \"rahi\", \"rha\", \"rahe\", \"hona\", \"hogaya\", \"hogya\", \"hogya\",\n\n  // Affirmation/Denial\n  \"yes\", \"ok\", \"sure\", \"ha\", \"haan\", \"done\", \"fine\", \"chalega\", \"sahi\", \"confirm\", \"okey\", \"okay\", \"ho gaya\", \"nahi\", \"na\",\n\n  // Misc Roman Hindi\n  \"karlo\", \"karlunga\", \"soch raha\", \"plan\", \"ready\", \"fix\", \"pata nahi\", \"nahi pata\", \"mat karo\", \"karna mat\", \"mat bhejna\", \"mat call\", \"rakh diya\", \"set kar diya\", \"adjust kar diya\", \"done ho gaya\"\n];\n\n  const isRomanHindi = hinglishKeywords.filter(word =>\n    new RegExp(`\\\\b${word}\\\\b`, 'i').test(normalized)\n  ).length >= 2 && !hasDevanagari;\n\n\n  // Marathi detection\n  const marathiKeywords = [\n  // Pronouns\n  \"मी\", \"माझं\", \"माझा\", \"माझी\", \"माझे\", \"माझ्या\", \"माझ्यासाठी\",\n  \"तू\", \"तुझं\", \"तुझा\", \"तुझी\", \"तुझे\", \"तुझ्या\", \"तुझ्यासाठी\",\n  \"तुमचं\", \"तुमचा\", \"तुमची\", \"तुमचे\", \"तुमच्या\", \"तुमच्यासाठी\",\n  \"तो\", \"ती\", \"ते\", \"त्याचा\", \"तिचा\", \"त्यांचं\", \"त्याचा\", \"त्यांची\", \"त्याचे\", \"त्यांच्या\",\n\n  // Common Verbs / Helping Verbs\n  \"आहे\", \"होतो\", \"होती\", \"आहोत\", \"होणार\", \"झालं\", \"झाले\", \"झालो\", \"झालोय\", \"झालेली\", \"झालेलं\",\n  \"होईल\", \"झालंय\", \"झालं आहे\", \"होत\", \"होणं\", \"झालेले\", \"झाली\", \"झालंय\", \"झालेल्या\", \"झालो\",\n\n  // Negation\n  \"नाही\", \"नसेल\", \"झालं नाही\", \"झालंय का नाही\", \"नकार\", \"ना\", \"नको\", \"नकोय\",\n\n  // Financial / Action Words\n  \"पैसे\", \"देणे\", \"देईल\", \"देणार\", \"दिले\", \"देतो\", \"देत\", \"दिलेले\", \"देले\", \"देणं\", \"भरणा\", \"फेडले\", \"फेड\", \"भरेन\", \"भरावे\",\n  \"कर्ज\", \"रक्कम\", \"उधारी\", \"बाकी\", \"बिल\", \"पेमेंट\", \"उठाव\", \"सेटल\", \"निपटारा\",\n\n  // Imperatives / Polite Requests\n  \"कर\", \"करा\", \"केले\", \"केलं\", \"करतो\", \"करते\", \"करून\", \"करायचं\", \"करणार\", \"केल्यावर\", \"करावं\", \"करावे\", \"करणार आहे\",\n  \"संपवा\", \"बंद\", \"थांबवा\", \"थांब\", \"निवडा\", \"वाचा\", \"द्या\", \"बघा\", \"पाहा\",\n\n  // Modal / Ability\n  \"शकतो\", \"शकते\", \"शकतोस\", \"शक्य\", \"शकणार\", \"शक्य आहे\", \"होईल\", \"होऊ शकते\", \"करू शकतो\", \"जमेल\",\n\n  // Time / Sequence Words\n  \"पर्यंत\", \"नंतर\", \"आधी\", \"मग\", \"पुढे\", \"संध्याकाळी\", \"सकाळी\", \"उद्या\", \"आज\", \"काल\", \"महिना\", \"आता\", \"कधी\", \"कधीही\", \"तेव्हा\", \"यावेळी\", \"लवकरच\",\n\n  // Question Words\n  \"काय\", \"कोण\", \"कधी\", \"कुठे\", \"का\", \"कसला\", \"कसते\", \"केव्हा\", \"कशासाठी\", \"कसा\", \"कोठे\", \"किती\",\n\n  // Conjunctions / Aux\n  \"म्हणून\", \"कारण\", \"आणि\", \"पण\", \"तर\", \"जर\", \"नंतर\", \"की\", \"मात्र\", \"जरी\", \"तरी\", \"जो\", \"जे\", \"ती\", \"ते\", \"सध्या\", \"माझ्याकडे\", \"कायम\", \"नव्हते\", \"नव्हे\", \"नसल्यामुळे\", \"नसलेले\", \"माझ्याजवळ\", \"तसेच\", \"झालेले\", \"नाहीत\",\n\n  // Misc Useful Words\n  \"बद्दल\", \"माहिती\", \"पत्ता\", \"संपर्क\", \"विचार\", \"संदेश\", \"फोन\", \"अर्ज\", \"तक्रार\", \"विनंती\", \"सल्ला\", \"मजकूर\", \"साक्ष\", \"ओळख\", \"नाव\", \"क्रमांक\",\n];\n\n  const marathiScore = marathiKeywords.filter(word => devanagariMatch(word, cleanText)).length;\n  const isMarathi = marathiScore >= 2;\n\n\n  // Hindi detection\n  const hindiKeywords = [\n  // Pronouns\n  \"मैं\", \"मुझे\", \"मेरे\", \"मेरा\", \"मेरी\", \"हम\", \"हमारा\", \"तुम\", \"आप\", \"आपका\", \"आपकी\", \"तुझे\", \"तेरा\", \"तेरी\", \"वह\", \"वो\", \"उनका\", \"उनकी\",\n\n  // Common Verbs & Helping Verbs\n  \"है\", \"हूँ\", \"थे\", \"था\", \"थी\", \"हैं\", \"होगा\", \"होगी\", \"होंगे\", \"होता\", \"होती\", \"होना\", \"होगे\", \"हो\", \"हो चुका\", \"हुआ\", \"हुई\", \"कर\", \"किया\", \"करेगा\", \"करूंगा\", \"करूँगा\", \"करना\", \"करती\", \"करते\", \"किया\", \"करो\", \"करिए\",\n\n  // Negation\n  \"नहीं\", \"मत\", \"न\", \"नकार\", \"इंकार\", \"इन्कार\", \"अस्वीकृति\",\n\n  // Finance / Payment Terms\n  \"भुगतान\", \"पैसे\", \"राशि\", \"देना\", \"दिया\", \"दिए\", \"देंगे\", \"दूँगा\", \"दे\", \"बकाया\", \"उधार\", \"बिल\", \"सेटेल\", \"निपटारा\", \"फुल पेमेंट\", \"रीपे\", \"चुकाना\", \"फुल चुका दिया\", \"रीपेमेंट\",\n\n  // Requests / Imperatives\n  \"कृपया\", \"दे\", \"दीजिए\", \"करो\", \"भेजो\", \"भेजिए\", \"बताओ\", \"जवाब दो\", \"फोन करो\", \"संपर्क करें\", \"बताइए\", \"रोकिए\", \"बंद करो\",\n\n  // Modal / Ability / Necessity\n  \"चाहिए\", \"सकता\", \"सकती\", \"सकते\", \"जरूरी\", \"लाज़मी\", \"होना चाहिए\", \"कर सकते हैं\", \"दे सकता हूँ\", \"दे सकूं\", \"चुकाना होगा\",\n\n  // Time / Sequence\n  \"जब\", \"तब\", \"अब\", \"आज\", \"कल\", \"परसों\", \"फिर\", \"उसके बाद\", \"पहले\", \"बाद\", \"अभी\", \"जल्दी\", \"समय\", \"समय पर\", \"उसी समय\", \"रात\", \"सुबह\",\n\n  // Question Words\n  \"क्या\", \"कहाँ\", \"कब\", \"कैसे\", \"क्यों\", \"किसे\", \"किस\", \"कौन\", \"कितना\", \"कितने\",\n\n  // Connectors / Conjunctions\n  \"अगर\", \"लेकिन\", \"या\", \"और\", \"तो\", \"पर\", \"इसलिए\", \"ताकि\", \"हालांकि\",\n\n  // Misc (chat/communication context)\n  \"कहना\", \"बताना\", \"संदेश\", \"कॉल\", \"फोन\", \"लिखो\", \"मेसेज\", \"बात\", \"समझ\", \"सुनो\", \"जवाब\", \"इनबॉक्स\", \"रीप्लाई\", \"ध्यान\", \"ब्लॉक\", \"रिपोर्ट\", \"शिकायत\", \"विवरण\"\n];\n\n  const hindiScore = hindiKeywords.filter(word => devanagariMatch(word, cleanText)).length;\n  const isHindi = hindiScore >= 2;\n\n  if (hasTamil) return \"tamil\";\n  if (hasTelugu) return \"telugu\";\n  if (isRomanHindi) return \"hinglish\";\n\n  if (hasDevanagari) {\n    if (isMarathi && !isHindi) return \"marathi\";\n    if (isHindi && !isMarathi) return \"hindi\";\n    if (isMarathi && isHindi) {\n      return marathiScore >= hindiScore ? \"marathi\" : \"hindi\";\n    }\n    return \"hindi\";\n  }\n\n\n  if (/^[a-zA-Z0-9\\s.,!?₹'-]+$/.test(cleanText)) return \"english\";\n\n  return \"unknown\";\n}\n\nconst original = $input.first().json;\n\nreturn {\n  json: {\n    ...original, \n    originalInput: $input.first().json,\n    chatInput: text,// This keeps all the original input fields (body, etc.)\n    lang: detectLang(text)       // This adds the detected language\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8120,
+        380
+      ],
+      "id": "ee72c5bc-7cc5-40df-9b09-f10149182ff9",
+      "name": "code to detect language"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconst today = new Date().toISOString().split(\"T\")[0];\n\nconst highlight_button = (\n  data.ptp_captured === true &&\n  data.ptp_date === today\n);\n\nreturn [{\n  json: {\n    ...data,\n    highlight_button\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1052,
+        230
+      ],
+      "id": "5be73da5-7770-4415-96e6-31ff823c5a7b",
+      "name": "check highlight"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "update to greeted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "code to detect ptp intent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update to greeted": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update PTP in Supabase",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Message Content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update PTP in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code to detect ptp intent": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Escalation": {
+      "main": [
+        [
+          {
+            "node": "DND",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Escalate": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update no escalation in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Escalation in Supabase": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Alert": {
+      "main": [
+        [
+          {
+            "node": "Update Escalation in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Update follow-up in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DND": {
+      "main": [
+        [
+          {
+            "node": "If Escalate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "set account closed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refusal to Pay detection": {
+      "main": [
+        [
+          {
+            "node": "Check Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Update follow-up in Supabase1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Reset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook3": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ip Lookup": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "getting the city and state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Reset": {
+      "main": [
+        [
+          {
+            "node": "code to detect language",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If8": {
+      "main": [
+        [
+          {
+            "node": "update to greeted1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Memory Manager1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Memory Manager1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set account open",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update PTP in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "check highlight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update to greeted1": {
+      "main": [
+        [
+          {
+            "node": "Chat Memory Manager1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Message Content": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getting the city and state": {
+      "main": [
+        [
+          {
+            "node": "updating the city and state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getting the ip": {
+      "main": [
+        [
+          {
+            "node": "update ip",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "check account closed": {
+      "main": [
+        [
+          {
+            "node": "getting the ip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get row": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ip Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update ip": {
+      "main": [
+        [
+          {
+            "node": "get row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updating the city and state": {
+      "main": [
+        [
+          {
+            "node": "get data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get data": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set account open": {
+      "main": [
+        [
+          {
+            "node": "Refusal to Pay detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set account closed": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update no escalation in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code to detect language": {
+      "main": [
+        [
+          {
+            "node": "check account closed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check highlight": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "name": "card display final",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        740,
+        0
+      ],
+      "id": "18753202-9bf7-44a3-a942-53eb3d6d3937",
+      "name": "Respond Details."
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Pull in all items\nconst allItems = $input.all();\n\n// 2) Base URL for magic links\nconst baseUrl = 'https://onecardassist.netlify.app/';\n\n// 3) Map over each row and build the output\nreturn allItems.map(item => {\n  const rid = String(item.json.realid || \"\");\n  return {\n    json: {\n      realid:       rid,\n      id:           item.json.id,\n      name:         item.json.name || item.json.name_hindi,\n      dueAmount:    item.json.due_amount,\n      dueDate:      item.json.due_date,\n      minimumDue:   item.json.min_due,\n      emiAvailable: item.json.emi_available,\n      chatLink:     `${baseUrl}?realid=${encodeURIComponent(rid)}`\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        0
+      ],
+      "id": "c6c54b3f-23ed-4db6-9d82-8740f65442f1",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "path": "<your_webhook_id_here>",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "94a7b3d0-b24d-4a0c-bd60-1c9ae8d6a52f",
+      "name": "Load Details Webhook",
+      "webhookId": "<your_webhook_id_here>"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1020,
+        0
+      ],
+      "id": "a2335222-24d8-40de-b19a-73e3ae6cc281",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "realid",
+              "condition": "eq",
+              "keyValue": "={{$json[\"query\"][\"realid\"]}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "d35da46c-09c6-48ad-92d6-fcd2523ad01f",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "<Your_Supabase_API_ID>",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "borrowers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{$json[\"id\"]}}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "link",
+              "fieldValue": "={{$json[\"chatLink\"]}}\n"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        160
+      ],
+      "id": "e70a25a6-57fb-435a-8378-8be85cdff6e8",
+      "name": "Supabase1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "GsHlGawLpLLIFYAq",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond Details.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Details Webhook": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Details.": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Supabase1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
