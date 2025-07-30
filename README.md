@@ -6,7 +6,7 @@
 
 ## About The Project
 
-Traditional debt collection is a manual, resource-intensive process that often struggles with scalability and can lead to negative customer experiences. This project solves that problem by creating an intelligent virtual assistant, "PredixionAI," designed to handle thousands of concurrent conversations, 24/7, across multiple languages and platforms.
+Traditional debt collection is a manual, resource-intensive process that often struggles with scalability and can lead to negative customer experiences. This project solves that problem by creating an intelligent virtual assistant, "PredixionAI," designed to handle conversations 24/7, across multiple languages and platforms.
 
 The system is built as a series of interconnected workflows in n8n, functioning as an autonomous agent. It can reason based on user input, use external tools to fetch and update data, and take actions to guide a user from initial contact through to final payment verification. The core focus is on enhancing efficiency and compliance while providing a respectful and supportive experience for the customer.
 
