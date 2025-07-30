@@ -1,4 +1,4 @@
-# Agentic AI for Fintech Collections
+# Agentic AI for Debt Collection
 
 > An end-to-end, multilingual chatbot system built to automate the debt collection lifecycle on WhatsApp and Web. This project leverages a sophisticated agentic architecture to create a scalable, compliant, and empathetic collections process for the fintech industry.
 
